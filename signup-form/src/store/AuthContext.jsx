@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react"
 import api, { setAccessToken, clearAccessToken } from "../api/axios"
-import { loginApi, logoutApi, signupApi } from "../api/Authapi"
+import { loginApi, logoutApi, signupApi } from "../api/authApi"
 
 const AuthContext = createContext()
 
