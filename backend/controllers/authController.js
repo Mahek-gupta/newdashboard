@@ -58,8 +58,8 @@ export const login = async (req, res) => {
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: false, // Production mein true karein
-    sameSite: "lax"
+    secure: true, // Production mein true karein
+    sameSite: "none"
   });
 
   res.json({
@@ -105,8 +105,8 @@ export const logout = async (req, res) => {
 
     res.clearCookie("refreshToken", {
       httpOnly: true,
-      sameSite: "lax",
-      secure: false
+      sameSite: "none",
+      secure: true
     });
 
     res.json({ message: "User Logged Out Successfully" });
