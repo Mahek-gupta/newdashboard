@@ -10,11 +10,19 @@ const app = express()
 const PORT = process.env.PORT || 5000;
 app.use(express.json())
 app.use(cookieParser())
+// app.use(cors({
+//   origin:process.env.FRONTEND_URL || "http://localhost:5173",
+//   credentials: true
+// }))
 app.use(cors({
-  origin:process.env.FRONTEND_URL || "http://localhost:5173",
-  credentials: true
-}))
-
+  origin: [
+    "https://newdashboard-frontend.onrender.com", 
+    "http://localhost:5173"
+  ],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Cookie"]
+}));
 app.use("/api/auth", authRoutes)
 
 mongoose.connect(process.env.MONGO_URI)
