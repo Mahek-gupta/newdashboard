@@ -49,7 +49,7 @@ const ResetPassword = () => {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL || "http://localhost:5000"}/api/auth/reset-password`,
+        `${import.meta.env.VITE_BACKEND_URL || "https://newdashboard-90o4.onrender.com"}/api/auth/reset-password`,
         {
           token,
           newPassword
