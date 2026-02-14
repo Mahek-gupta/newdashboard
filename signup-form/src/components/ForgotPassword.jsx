@@ -33,7 +33,7 @@ const ForgotPassword = ({ open, onClose }) => {
     try {
       // Call backend API to send password reset email
       const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL || "http://localhost:5000"}/api/auth/forgot-password`,
+        `${import.meta.env.VITE_BACKEND_URL || "https://newdashboard-90o4.onrender.com"}/api/auth/forgot-password`,
         { email }
       )
 
