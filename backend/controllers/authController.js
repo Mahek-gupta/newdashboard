@@ -219,11 +219,24 @@ import nodemailer from "nodemailer"
 import crypto from "crypto"
 
 // ✅ STABLE GMAIL TRANSPORTER
+// const transporter = nodemailer.createTransport({
+//   service: "gmail",
+//   auth: {
+//     user: process.env.EMAIL_USER,
+//     pass: process.env.EMAIL_PASS, // bjnsyyrovaarddne
+//   }
+// });
 const transporter = nodemailer.createTransport({
   service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587, // 👈 465 ki jagah 587 use karein
+  secure: false, // 👈 587 ke liye secure: false hona chahiye
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // bjnsyyrovaarddne
+    pass: process.env.EMAIL_PASS, // Wahi 16-digit App Password
+  },
+  tls: {
+    rejectUnauthorized: false // 👈 Ye connection issues ko solve karne mein help karta hai
   }
 });
 
