@@ -33,18 +33,19 @@
 //   console.log(`Server running on port ${PORT}`)
 //   console.log("mahak")
 // })
-import express from "express"
-import mongoose from "mongoose"
-import cors from "cors"
-import cookieParser from "cookie-parser"
-import authRoutes from "./routes/authRoutes.js"
-import dotenv from "dotenv"
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import authRoutes from "./routes/authRoutes.js";
+import dotenv from "dotenv";
 
-dotenv.config()
-const app = express()
+dotenv.config();
+const app = express();
 const PORT = process.env.PORT || 5000;
 
 // ✅ 1. CORS Configuration
+// Isse Frontend aur Backend ke beech communication allow hoga
 app.use(cors({
   origin: ["https://newdashboard-frontend.onrender.com", "http://localhost:5173"],
   credentials: true,
@@ -52,20 +53,25 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization", "Cookie"]
 }));
 
-// ✅ 2. FIX: Wildcard Error Fix (Is line ko aise badlein)
-// Puraana tarika: app.options('*', cors()) -> Isse error aa raha tha
-app.options('(.*)', cors()); 
+// ✅ 2. FIXED: OPTIONS handler for Express 5.x / Path-to-Regexp
+// Purana '*' ya '(.*)' ab error deta hai. '/:any*' named parameter use karna zaroori hai.
+app.options('/:any*', cors()); 
 
-app.use(express.json())
-app.use(cookieParser())
+app.use(express.json());
+app.use(cookieParser());
 
-// ✅ 3. Routes
-app.use("/api/auth", authRoutes)
+// ✅ 3. Routes setup
+app.use("/api/auth", authRoutes);
 
+// Database Connection
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch(err => console.error("MongoDB error:", err))
+  .then(() => console.log("✅ MongoDB connected successfully"))
+  .catch(err => {
+    console.error("❌ MongoDB connection error:", err);
+    process.exit(1); // Connection fail hone par process stop kar dein
+  });
 
+// Server Start
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})
+  console.log(`🚀 Server running on port ${PORT}`);
+});
