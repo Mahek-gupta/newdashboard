@@ -18,41 +18,37 @@ import crypto from "crypto"
 //     rejectUnauthorized: false, // Security check bypass for hosting
 //   }
 // });
+
+
+
+// 1. Updated Transporter
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // 587 ke liye false hona chahiye
+  service: "gmail", 
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  tls: {
-    rejectUnauthorized: false,
-    minVersion: "TLSv1.2" // Render ke liye zaroori hai
-  }
 });
-// Helper Function
+
+// 2. Updated Helper with verification
 const sendResetEmail = async (email, resetLink) => {
-  const mailOptions = {
-    from: `"Support Team" <${process.env.EMAIL_USER}>`,
-    to: email,
-    subject: "Password Reset Request",
-    html: `
-        <div style="font-family: sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px; max-width: 500px;">
-          <h2 style="color: #1f2937;">Password Reset Request</h2>
-          <p>Aapne password reset ke liye request ki hai. Niche diye gaye link par click karein:</p>
-          <a href="${resetLink}" style="background-color: #1f2937; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0;">
-            Reset Password
-          </a>
-          <p style="color: #666; font-size: 14px;">Ye link 1 ghante mein expire ho jayega.</p>
-          <p style="color: #999; font-size: 12px;">Agar aapne ye request nahi ki, toh is email ko ignore karein.</p>
-        </div>
-      `,
-  };
+  try {
+    // Ye line check karegi ki connection ban raha hai ya nahi
+    await transporter.verify(); 
+    
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Password Reset Request",
+      html: `<h3>Reset Link:</h3><a href="${resetLink}">${resetLink}</a>`
+    };
 
-  return transporter.sendMail(mailOptions);
+    return await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error("Transporter Verify Error:", error.message);
+    throw error; // Taki forgotPassword ko pata chale ki mail nahi gaya
+  }
 };
-
 // --- AUTH CONTROLLERS ---
 
 export const signup = async (req, res) => {
