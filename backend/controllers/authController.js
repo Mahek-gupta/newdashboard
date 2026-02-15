@@ -405,7 +405,7 @@ import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import SibApiV3Sdk from 'sib-api-v3-sdk'; // 👈 Make sure to npm install this
+import SibApiV3Sdk from 'sib-api-v3-sdk';
 
 // ✅ BREVO API SDK CONFIGURATION
 const defaultClient = SibApiV3Sdk.ApiClient.instance;
@@ -464,7 +464,6 @@ export const login = async (req, res) => {
   }
 };
 
-// ✅ FORGOT PASSWORD (Using Direct Brevo API - NO TIMEOUT)
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -473,7 +472,6 @@ export const forgotPassword = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      // Security: Don't reveal user existence
       return res.status(200).json({ message: "If an account exists, a link will be sent." });
     }
 
@@ -481,12 +479,11 @@ export const forgotPassword = async (req, res) => {
     const resetTokenHash = crypto.createHash("sha256").update(resetToken).digest("hex");
 
     user.resetToken = resetTokenHash;
-    user.resetTokenExpire = new Date(Date.now() + 3600000); // 1 Hour
+    user.resetTokenExpire = new Date(Date.now() + 3600000); 
     await user.save();
 
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
-    // Brevo API Mail Setup
     const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
     sendSmtpEmail.subject = "Password Reset Request";
     sendSmtpEmail.htmlContent = `
@@ -501,7 +498,6 @@ export const forgotPassword = async (req, res) => {
     sendSmtpEmail.sender = { "name": "Support Team", "email": "guptamahek35@gmail.com" };
     sendSmtpEmail.to = [{ "email": user.email }];
 
-    // API call execute karein
     await apiInstance.sendTransacEmail(sendSmtpEmail);
 
     res.status(200).json({ message: "Reset link sent successfully!" });
@@ -559,3 +555,32 @@ export const refreshToken = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Refresh token error" });
   }
+};
+
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({}, "-password").sort({ createdAt: -1 });
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Users fetch error" });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    await User.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: "User deleted" });
+  } catch (error) {
+    res.status(500).json({ message: "Delete error" });
+  }
+};
+
+export const updateUserRole = async (req, res) => {
+  try {
+    const { role } = req.body;
+    await User.findByIdAndUpdate(req.params.id, { role });
+    res.status(200).json({ message: "Role updated" });
+  } catch (error) {
+    res.status(500).json({ message: "Update error" });
+  }
+};
