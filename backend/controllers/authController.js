@@ -211,43 +211,38 @@
 //   }
 // };
 
-import User from "../models/User.js"
-import { generateAccessToken, generateRefreshToken } from "../utils/token.js"
-import bcrypt from "bcryptjs"
-import jwt from "jsonwebtoken"
-import nodemailer from "nodemailer"
-import crypto from "crypto"
+import User from "../models/User.js";
+import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
+import crypto from "crypto";
 
-// ✅ STABLE GMAIL TRANSPORTER
-// const transporter = nodemailer.createTransport({
-//   service: "gmail",
-//   auth: {
-//     user: process.env.EMAIL_USER,
-//     pass: process.env.EMAIL_PASS, // bjnsyyrovaarddne
-//   }
-// });
+// ✅ NEW BREVO TRANSPORTER (SMTP RELAY)
+// Yeh Gmail se zyada stable hai cloud hosting ke liye
 const transporter = nodemailer.createTransport({
-  service: "gmail",
-  host: "smtp.gmail.com",
-  port: 587, // 👈 465 ki jagah 587 use karein
-  secure: false, // 👈 587 ke liye secure: false hona chahiye
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  secure: false, // TLS ke liye false hi rahega
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // Wahi 16-digit App Password
+    user: "guptamahek35@gmail.com", // Aapka Brevo Login email
+    pass: process.env.BREVO_API_KEY, // Render Env: xkeysib... waali key
   },
-  tls: {
-    rejectUnauthorized: false // 👈 Ye connection issues ko solve karne mein help karta hai
-  }
 });
+
+// --- AUTH CONTROLLERS ---
 
 export const signup = async (req, res) => {
   try {
     const { email, password, role } = req.body;
     if (!email || !password) return res.status(400).json({ message: "All fields required" });
+
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ message: "User already exists" });
+
     const hashedPassword = await bcrypt.hash(password, 10);
     await User.create({ email, password: hashedPassword, role: role || "user" });
+
     res.status(201).json({ message: "User created successfully" });
   } catch (error) {
     res.status(500).json({ message: "Signup error" });
@@ -258,20 +253,28 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
+
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
+
     user.status = "active";
     user.lastSeen = new Date();
     await user.save();
+
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
+
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: "none",
     });
-    res.json({ accessToken, user: { email: user.email, role: user.role, status: user.status } });
+
+    res.json({
+      accessToken,
+      user: { email: user.email, role: user.role, status: user.status },
+    });
   } catch (error) {
     res.status(500).json({ message: "Login error" });
   }
@@ -284,6 +287,7 @@ export const forgotPassword = async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user) {
+      // Security: User ko mat batao ki email galat hai
       return res.status(200).json({ message: "If an account exists, a link will be sent." });
     }
 
@@ -291,26 +295,32 @@ export const forgotPassword = async (req, res) => {
     const resetTokenHash = crypto.createHash("sha256").update(resetToken).digest("hex");
 
     user.resetToken = resetTokenHash;
-    user.resetTokenExpire = new Date(Date.now() + 60 * 60 * 1000); 
+    user.resetTokenExpire = new Date(Date.now() + 60 * 60 * 1000); // 1 Hour
     await user.save();
 
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
-    try {
-      const mailOptions = {
-        from: `"Support Team" <${process.env.EMAIL_USER}>`,
-        to: user.email,
-        subject: "Password Reset Request",
-        html: `<h3>Password Reset</h3><p>Niche diye link par click karein:</p><a href="${resetLink}">${resetLink}</a>`
-      };
-      await transporter.sendMail(mailOptions);
-      res.status(200).json({ message: "Password reset link sent to your email" });
-    } catch (mailErr) {
-      console.error("SMTP ERROR:", mailErr.message);
-      return res.status(500).json({ message: "Email service failed. Try again later." });
-    }
+    // Brevo ke liye correct Mail Options
+    const mailOptions = {
+      from: `"Support Team" <guptamahek35@gmail.com>`, // Must be your verified Brevo email
+      to: user.email,
+      subject: "Password Reset Request",
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+          <h2>Password Reset</h2>
+          <p>Aapne password reset karne ki request ki hai. Niche diye gaye link par click karein:</p>
+          <a href="${resetLink}" style="padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Reset Password</a>
+          <p>Ye link 1 ghante mein expire ho jayega.</p>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ message: "Password reset link sent to your email" });
+
   } catch (error) {
-    res.status(500).json({ message: "Internal server error" });
+    console.error("EMAIL_SERVICE_ERROR:", error.message);
+    res.status(500).json({ message: "Failed to send email. Please try again later." });
   }
 };
 
@@ -318,15 +328,19 @@ export const resetPassword = async (req, res) => {
   try {
     const { token, newPassword } = req.body;
     const resetTokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
     const user = await User.findOne({
       resetToken: resetTokenHash,
       resetTokenExpire: { $gt: new Date() },
     });
+
     if (!user) return res.status(400).json({ message: "Invalid or expired token" });
+
     user.password = await bcrypt.hash(newPassword, 10);
     user.resetToken = undefined;
     user.resetTokenExpire = undefined;
     await user.save();
+
     res.status(200).json({ message: "Password updated successfully" });
   } catch (error) {
     res.status(500).json({ message: "Reset password error" });
@@ -335,7 +349,6 @@ export const resetPassword = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-    // Optionally update user status to inactive if req.user exists
     res.clearCookie("refreshToken", { httpOnly: true, sameSite: "none", secure: true });
     res.json({ message: "Logged out" });
   } catch (error) {
@@ -347,10 +360,11 @@ export const refreshToken = async (req, res) => {
   try {
     const token = req.cookies.refreshToken;
     if (!token) return res.status(401).json({ message: "No refresh token" });
+
     jwt.verify(token, process.env.REFRESH_SECRET, async (err, decoded) => {
       if (err) return res.status(403).json({ message: "Invalid refresh token" });
       const user = await User.findById(decoded.id);
-      if(!user) return res.status(404).json({ message: "User not found" });
+      if (!user) return res.status(404).json({ message: "User not found" });
       const accessToken = generateAccessToken(user);
       res.json({ accessToken });
     });
@@ -358,8 +372,6 @@ export const refreshToken = async (req, res) => {
     res.status(500).json({ message: "Refresh token error" });
   }
 };
-
-// ✅ MISSING FUNCTIONS ADDED BELOW:
 
 export const getAllUsers = async (req, res) => {
   try {
