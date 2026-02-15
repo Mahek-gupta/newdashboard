@@ -44,7 +44,7 @@ dotenv.config()
 const app = express()
 const PORT = process.env.PORT || 5000;
 
-// ✅ FIXED CORS: Credentials aur Options handle karne ke liye
+// ✅ 1. CORS Configuration
 app.use(cors({
   origin: ["https://newdashboard-frontend.onrender.com", "http://localhost:5173"],
   credentials: true,
@@ -52,18 +52,19 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization", "Cookie"]
 }));
 
-// Browser ke OPTIONS (pre-flight) request ko allow karne ke liye
-app.options('*', cors()); 
+// ✅ 2. FIX: Wildcard Error Fix (Is line ko aise badlein)
+// Puraana tarika: app.options('*', cors()) -> Isse error aa raha tha
+app.options('(.*)', cors()); 
 
 app.use(express.json())
 app.use(cookieParser())
 
-// Routes
+// ✅ 3. Routes
 app.use("/api/auth", authRoutes)
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
-  .catch(err => console.log("Mongo Error:", err))
+  .catch(err => console.error("MongoDB error:", err))
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
