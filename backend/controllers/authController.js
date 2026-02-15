@@ -322,6 +322,7 @@ export const resetPassword = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
+    // Optionally update user status to inactive if req.user exists
     res.clearCookie("refreshToken", { httpOnly: true, sameSite: "none", secure: true });
     res.json({ message: "Logged out" });
   } catch (error) {
@@ -342,5 +343,35 @@ export const refreshToken = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: "Refresh token error" });
+  }
+};
+
+// ✅ MISSING FUNCTIONS ADDED BELOW:
+
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({}, "-password").sort({ createdAt: -1 });
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Users fetch error" });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    await User.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: "User deleted" });
+  } catch (error) {
+    res.status(500).json({ message: "Delete error" });
+  }
+};
+
+export const updateUserRole = async (req, res) => {
+  try {
+    const { role } = req.body;
+    await User.findByIdAndUpdate(req.params.id, { role });
+    res.status(200).json({ message: "Role updated" });
+  } catch (error) {
+    res.status(500).json({ message: "Update error" });
   }
 };
