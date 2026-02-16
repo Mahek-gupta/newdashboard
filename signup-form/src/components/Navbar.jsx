@@ -24,6 +24,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard'
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'
 import LoginIcon from '@mui/icons-material/Login'
 import AppRegistrationIcon from '@mui/icons-material/AppRegistration'
+import ThemeToggle from './ThemeToggle'
 
 const Navbar = () => {
   const { user, logout, loading } = useAuth()
@@ -164,6 +165,12 @@ const Navbar = () => {
             >
               SecureAuth
             </Typography>
+
+// Navbar.js ke andar
+<Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+   <ThemeToggle/>
+   {/* Profile/Logout buttons */}
+</Box>
 
             {/* Desktop Menu */}
             <Box
