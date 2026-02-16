@@ -1,54 +1,7 @@
-// import React from 'react'
-// import { Route, Routes } from 'react-router-dom'
-// import Signup from './components/signup'
-// import Login from './components/login'
-// import AuthProvider from './store/AuthContext'
-// import DashBoard from './components/DashBoard'
-// import ProtectRoute from './components/ProtectRoute'
-// import Navbar from './components/Navbar'
-// import AdminRoute from './components/AdminRoute'
-// import AdminDashboard from './components/AdminDashboard'
-// import { ToastContainer } from "react-toastify"
-// import "react-toastify/dist/ReactToastify.css"
-// import NotificationProvider from './components/NotificationContext'
-
-// const App = () => {
-//   return (
-//     <div>
-//       <NotificationProvider>
-//        <ToastContainer position="top-right" autoClose={3000} />
-//       <AuthProvider>
-//         <Navbar/>
-//       <Routes>
-//         <Route path='/' element={<Signup/>}/>
-//         <Route path='/login' element={<Login/>}/>
-
-//         <Route path='/dashboard' element={
-//           <ProtectRoute>
-//           <DashBoard/>
-//           </ProtectRoute>}/>
-
-//                 <Route path='/admin' element={
-//         <AdminRoute>
-//           <AdminDashboard/>
-//              </AdminRoute>
-//       }/>
-//       </Routes>
-
-//       </AuthProvider>
-//       </NotificationProvider>
-//     </div>
-//   )
-// }
-
-// export default App
-
-
-
 import React from 'react'
 import Signup from './components/Signup'
 import { Route, Routes } from 'react-router-dom'
-import Login from './components/Login'
+import Login from './components/login'
 import ResetPassword from './components/ResetPassword'
 import ProtectRoute from './components/ProtectRoute'
 import DashBoard from './components/DashBoard'
@@ -60,9 +13,11 @@ import Navbar from './components/Navbar'
 // Toast imports
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { ThemeContextProvider } from './store/ThemeContext'
 
 const App = () => {
   return (
+    <ThemeContextProvider>
     <AuthProvider>
       <div>
         <Navbar />  
@@ -97,6 +52,7 @@ const App = () => {
         <ToastContainer position="top-right" autoClose={3000} />
       </div>
     </AuthProvider>
+    </ThemeContextProvider>
   )
 }
 
