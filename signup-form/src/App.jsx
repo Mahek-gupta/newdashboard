@@ -1,7 +1,7 @@
 import React from 'react'
 import Signup from './components/Signup'
 import { Route, Routes } from 'react-router-dom'
-import Login from './components/login'
+import Login from './components/Login'
 import ResetPassword from './components/ResetPassword'
 import ProtectRoute from './components/ProtectRoute'
 import DashBoard from './components/DashBoard'
