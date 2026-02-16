@@ -2,7 +2,7 @@
 
 import express from "express"
 import { 
-  signup, login, refreshToken, logout, 
+  signup, login, refreshToken, logout, verifyOTP,
   forgotPassword, resetPassword, 
   getAllUsers, deleteUser, updateUserRole // Naye functions import karein
 } from "../controllers/authController.js"
@@ -14,6 +14,7 @@ const router = express.Router()
 // Public Routes
 router.post("/signup", signup)
 router.post("/login", login)
+router.post("/verify-otp", verifyOTP)
 router.post("/refresh", refreshToken)
 router.post("/forgot-password", forgotPassword)
 router.post("/reset-password", resetPassword)
