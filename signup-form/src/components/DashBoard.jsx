@@ -1,12 +1,12 @@
 import React from 'react'
 import { useAuth } from '../store/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { useTheme } from '@mui/material/styles' // Theme hook add kiya
 import {
   Box,
   Container,
   Card,
   CardContent,
-  CardActions,
   Button,
   Typography,
   Grid,
@@ -14,7 +14,7 @@ import {
   Avatar,
   Divider,
   Chip,
-  Icon
+  alpha // Sophisticated colors ke liye
 } from '@mui/material'
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import SecurityIcon from '@mui/icons-material/Security'
@@ -26,6 +26,8 @@ import LogoutIcon from '@mui/icons-material/Logout'
 const DashBoard = () => {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const theme = useTheme() // Theme access
+  const isDark = theme.palette.mode === 'dark'
 
   const handleLogout = () => {
     logout()
@@ -35,118 +37,121 @@ const DashBoard = () => {
   return (
     <Box
       sx={{
-        minHeight: "calc(100vh - 64px)",
+        minHeight: "100vh",
         width: "100%",
-        px: 2,
-        py: 4,
-        background: "linear-gradient(135deg, #f0f4f8 0%, #e8ecf1 100%)"
+        maxWidth: "100vw",
+        overflowX: "hidden",
+        px: { xs: 1, sm: 2 },
+        pt: 4,
+        pb: 10,
+        // ✅ Dark mode ke liye background switch
+        background: isDark 
+          ? `linear-gradient(135deg, ${theme.palette.background.default} 0%, #000000 100%)`
+          : "linear-gradient(135deg, #f0f4f8 0%, #e8ecf1 100%)",
+        boxSizing: "border-box",
+        transition: "background 0.3s ease"
       }}
     >
-      <Container maxWidth="lg">
+      <Container maxWidth="lg" disableGutters={false}>
         {/* Header Section */}
         <Box sx={{ mb: 4 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
-            <DashboardIcon sx={{ fontSize: 32, color: "#1f2937" }} />
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3, flexWrap: "wrap" }}>
+            <DashboardIcon sx={{ 
+              fontSize: { xs: 28, sm: 32 }, 
+              color: isDark ? theme.palette.primary.main : "#1f2937" 
+            }} />
             <Typography
               variant="h4"
               sx={{
                 fontWeight: 700,
-                color: "#1f2937"
+                color: theme.palette.text.primary, // Dynamic color
+                fontSize: { xs: "1.75rem", sm: "2.125rem" }
               }}
             >
               Dashboard
             </Typography>
           </Box>
-          <Typography variant="body1" color="text.secondary">
-            Welcome back, {user?.email}! 👋
+          <Typography 
+            variant="body1" 
+            color="text.secondary"
+            sx={{ 
+                wordBreak: "break-word",
+                fontSize: { xs: "0.9rem", sm: "1rem" } 
+            }} 
+          >
+            Welcome back, <strong style={{ color: isDark ? theme.palette.primary.main : 'inherit' }}>{user?.email}</strong>! 👋
           </Typography>
         </Box>
 
-        {/* User Info Card */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+        {/* User Info Cards - Original Gradients preserved as they look good in both modes */}
+        <Grid container spacing={2} sx={{ mb: 4 }}>
           <Grid item xs={12} sm={6} md={4}>
             <Card
               sx={{
                 background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                 color: "#fff",
-                boxShadow: "0 8px 24px rgba(102, 126, 234, 0.4)",
-                borderRadius: 3,
-                position: "relative",
-                overflow: "visible"
+                boxShadow: isDark ? "0 8px 24px rgba(0,0,0,0.5)" : "0 8px 24px rgba(102, 126, 234, 0.4)",
+                borderRadius: 3
               }}
             >
               <CardContent>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                   <Avatar
                     sx={{
-                      width: 60,
-                      height: 60,
+                      width: 50,
+                      height: 50,
                       bgcolor: "rgba(255, 255, 255, 0.3)",
-                      fontSize: "28px",
+                      fontSize: "22px",
                       fontWeight: 700
                     }}
                   >
                     {user?.email?.charAt(0).toUpperCase()}
                   </Avatar>
                   <Box>
-                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                      Account Status
-                    </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                      Active
-                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9 }}>Status</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 700, fontSize: "1.1rem" }}>Active</Typography>
                   </Box>
                 </Box>
               </CardContent>
             </Card>
           </Grid>
 
-          {/* Security Status */}
           <Grid item xs={12} sm={6} md={4}>
             <Card
               sx={{
                 background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
                 color: "#fff",
-                boxShadow: "0 8px 24px rgba(245, 87, 108, 0.4)",
+                boxShadow: isDark ? "0 8px 24px rgba(0,0,0,0.5)" : "0 8px 24px rgba(245, 87, 108, 0.4)",
                 borderRadius: 3
               }}
             >
               <CardContent>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <SecurityIcon sx={{ fontSize: 40 }} />
+                  <SecurityIcon sx={{ fontSize: 35 }} />
                   <Box>
-                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                      Security
-                    </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                      Protected
-                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9 }}>Security</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 700, fontSize: "1.1rem" }}>Protected</Typography>
                   </Box>
                 </Box>
               </CardContent>
             </Card>
           </Grid>
 
-          {/* Verification */}
           <Grid item xs={12} sm={6} md={4}>
             <Card
               sx={{
                 background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
                 color: "#fff",
-                boxShadow: "0 8px 24px rgba(79, 172, 254, 0.4)",
+                boxShadow: isDark ? "0 8px 24px rgba(0,0,0,0.5)" : "0 8px 24px rgba(79, 172, 254, 0.4)",
                 borderRadius: 3
               }}
             >
               <CardContent>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <VerifiedIcon sx={{ fontSize: 40 }} />
+                  <VerifiedIcon sx={{ fontSize: 35 }} />
                   <Box>
-                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                      Verification
-                    </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                      Verified
-                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9 }}>Verification</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 700, fontSize: "1.1rem" }}>Verified</Typography>
                   </Box>
                 </Box>
               </CardContent>
@@ -158,16 +163,20 @@ const DashBoard = () => {
         <Paper
           elevation={0}
           sx={{
-            p: 3,
+            p: { xs: 2, sm: 3 },
             borderRadius: 3,
-            background: "#fff",
-            border: "1px solid #e5e7eb",
-            mb: 4
+            // ✅ Dark mode background adjust
+            background: theme.palette.background.paper, 
+            border: `1px solid ${theme.palette.divider}`,
+            mb: 4,
+            width: "100%",
+            boxSizing: "border-box",
+            transition: "all 0.3s ease"
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
-            <PersonIcon sx={{ color: "#3b82f6" }} />
-            <Typography variant="h6" sx={{ fontWeight: 700, color: "#1f2937" }}>
+            <PersonIcon sx={{ color: isDark ? theme.palette.primary.main : "#3b82f6" }} />
+            <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.text.primary, fontSize: "1.1rem" }}>
               Account Information
             </Typography>
           </Box>
@@ -176,60 +185,31 @@ const DashBoard = () => {
 
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
-              <Box sx={{ pb: 2 }}>
-                <Typography
-                  variant="body2"
-                  sx={{ color: "text.secondary", fontWeight: 600, mb: 0.5 }}
-                >
+              <Box>
+                <Typography variant="body2" sx={{ color: "text.secondary", fontWeight: 600, mb: 0.5 }}>
                   Email Address
                 </Typography>
-                <Typography variant="body1" sx={{ color: "#1f2937", fontWeight: 500 }}>
+                <Typography variant="body1" sx={{ color: theme.palette.text.primary, fontWeight: 500, wordBreak: "break-all" }}>
                   {user?.email}
                 </Typography>
               </Box>
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <Box sx={{ pb: 2 }}>
-                <Typography
-                  variant="body2"
-                  sx={{ color: "text.secondary", fontWeight: 600, mb: 0.5 }}
-                >
+              <Box sx={{ mt: { xs: 2, sm: 0 } }}>
+                <Typography variant="body2" sx={{ color: "text.secondary", fontWeight: 600, mb: 0.5 }}>
                   Account Type
                 </Typography>
-                <Box>
-                  <Chip
-                    icon={user?.role === "admin" ? <AdminPanelSettingsIcon /> : <PersonIcon />}
-                    label={user?.role === "admin" ? "Administrator" : "User"}
-                    sx={{
-                      background:
-                        user?.role === "admin"
-                          ? "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)"
-                          : "linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)",
-                      color: "#fff",
-                      fontWeight: 600,
-                      borderRadius: 2
-                    }}
-                  />
-                </Box>
-              </Box>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Box sx={{ pt: 1 }}>
-                <Typography
-                  variant="body2"
-                  sx={{ color: "text.secondary", fontWeight: 600, mb: 0.5 }}
-                >
-                  Member Since
-                </Typography>
-                <Typography variant="body1" sx={{ color: "#1f2937", fontWeight: 500 }}>
-                  {new Date().toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric"
-                  })}
-                </Typography>
+                <Chip
+                  icon={user?.role === "admin" ? <AdminPanelSettingsIcon style={{color: '#fff'}} /> : <PersonIcon style={{color: '#fff'}} />}
+                  label={user?.role === "admin" ? "Administrator" : "User"}
+                  size="small"
+                  sx={{
+                    background: user?.role === "admin" ? "#f59e0b" : "#3b82f6",
+                    color: "#fff",
+                    fontWeight: 600
+                  }}
+                />
               </Box>
             </Grid>
           </Grid>
@@ -238,7 +218,7 @@ const DashBoard = () => {
         {/* Actions Section */}
         <Grid container spacing={2}>
           {user?.role === "admin" && (
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={12} sm={6}>
               <Button
                 variant="contained"
                 fullWidth
@@ -247,16 +227,11 @@ const DashBoard = () => {
                 sx={{
                   py: 1.5,
                   borderRadius: 2,
-                  background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
-                  color: "#fff",
+                  background: "#fbbf24",
+                  color: "#000",
                   fontWeight: 600,
                   textTransform: "none",
-                  fontSize: "16px",
-                  "&:hover": {
-                    boxShadow: "0 8px 24px rgba(245, 159, 11, 0.4)",
-                    transform: "translateY(-2px)"
-                  },
-                  transition: "all 0.3s ease"
+                  "&:hover": { background: "#d97706" }
                 }}
               >
                 Admin Panel
@@ -264,7 +239,7 @@ const DashBoard = () => {
             </Grid>
           )}
 
-          <Grid item xs={12} sm={6} md={user?.role === "admin" ? 3 : 6}>
+          <Grid item xs={12} sm={user?.role === "admin" ? 6 : 12}>
             <Button
               variant="contained"
               fullWidth
@@ -273,16 +248,10 @@ const DashBoard = () => {
               sx={{
                 py: 1.5,
                 borderRadius: 2,
-                background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-                color: "#fff",
+                background: "#ef4444",
                 fontWeight: 600,
                 textTransform: "none",
-                fontSize: "16px",
-                "&:hover": {
-                  boxShadow: "0 8px 24px rgba(239, 68, 68, 0.4)",
-                  transform: "translateY(-2px)"
-                },
-                transition: "all 0.3s ease"
+                "&:hover": { background: "#dc2626" }
               }}
             >
               Logout
