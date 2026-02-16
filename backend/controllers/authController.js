@@ -216,34 +216,65 @@ export const signup = async (req, res) => {
   }
 };
 
+// export const login = async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+//     const user = await User.findOne({ email });
+
+//     if (!user || !(await bcrypt.compare(password, user.password))) {
+//       return res.status(401).json({ message: "Invalid credentials" });
+//     }
+
+//     user.status = "active";
+//     user.lastSeen = new Date();
+//     await user.save();
+
+//     const accessToken = generateAccessToken(user);
+//     const refreshToken = generateRefreshToken(user);
+
+//     res.cookie("refreshToken", refreshToken, {
+//       httpOnly: true,
+//       secure: true,
+//       sameSite: "none",
+//     });
+
+//     res.json({
+//       accessToken,
+//       user: { email: user.email, role: user.role, status: user.status },
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: "Login error" });
+//   }
+// };
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
 
+    // 1. Check Credentials
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    user.status = "active";
-    user.lastSeen = new Date();
+    // 2. Generate 6-Digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.otp = otp;
+    user.otpExpire = new Date(Date.now() + 5 * 60 * 1000); // 5 minute validity
     await user.save();
 
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
+    // 3. Send OTP via Brevo
+    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+    sendSmtpEmail.subject = "Login Verification Code";
+    sendSmtpEmail.htmlContent = `<h3>Your OTP is: <b style="color:blue;">${otp}</b></h3><p>Valid for 5 minutes only.</p>`;
+    sendSmtpEmail.sender = { "name": "Security Team", "email": "guptamahek35@gmail.com" };
+    sendSmtpEmail.to = [{ "email": user.email }];
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-    });
+    await apiInstance.sendTransacEmail(sendSmtpEmail);
 
-    res.json({
-      accessToken,
-      user: { email: user.email, role: user.role, status: user.status },
-    });
+    // Frontend ko batayein ki ab OTP screen dikhao
+    res.json({ message: "OTP sent to your email", step: "verify-otp", email: user.email });
   } catch (error) {
-    res.status(500).json({ message: "Login error" });
+    res.status(500).json({ message: "Login error", error: error.message });
   }
 };
 
@@ -381,5 +412,32 @@ export const updateUserRole = async (req, res) => {
     res.status(200).json({ message: "Role updated" });
   } catch (error) {
     res.status(500).json({ message: "Update error" });
+  }
+};
+export const verifyOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const user = await User.findOne({ email, otp, otpExpire: { $gt: new Date() } });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    // OTP match ho gaya! Ab tokens generate karein
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    // Cleanup OTP fields
+    user.otp = null;
+    user.otpExpire = null;
+    user.status = "active";
+    user.lastSeen = new Date();
+    await user.save();
+
+    res.cookie("refreshToken", refreshToken, { httpOnly: true, secure: true, sameSite: "none" });
+    res.json({ accessToken, user: { email: user.email, role: user.role } });
+
+  } catch (error) {
+    res.status(500).json({ message: "Verification failed" });
   }
 };
