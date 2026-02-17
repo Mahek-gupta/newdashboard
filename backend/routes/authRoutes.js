@@ -46,5 +46,5 @@ router.get("/users", protect, adminOnly, getAllUsers);
 router.delete("/user/:id", protect, adminOnly, deleteUser);
 router.post("/logout", protect, logout); // 'protect' lagana zaroori hai
 router.put("/user/:id", protect, adminOnly, updateUserRole);
-router.put("/update-profile", protect, upload.single('image'), updateProfile);
+router.put("/update-profile-pic", protect, upload.single('image'), updateProfile);
 export default router
