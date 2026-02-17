@@ -1,3 +1,4 @@
+
 // import React, { useState } from 'react'
 // import { useNavigate } from 'react-router-dom'
 // import { useAuth } from '../store/AuthContext'
@@ -63,9 +64,7 @@
 //           <ListItem disablePadding>
 //             <ListItemButton
 //               onClick={() => handleNavigation('/signup')}
-//               sx={{
-//                 '&:hover': { backgroundColor: '#f0f0f0' }
-//               }}
+//               sx={{ '&:hover': { backgroundColor: '#f0f0f0' } }}
 //             >
 //               <AppRegistrationIcon sx={{ mr: 1 }} />
 //               <Typography>Sign Up</Typography>
@@ -74,9 +73,7 @@
 //           <ListItem disablePadding>
 //             <ListItemButton
 //               onClick={() => handleNavigation('/login')}
-//               sx={{
-//                 '&:hover': { backgroundColor: '#f0f0f0' }
-//               }}
+//               sx={{ '&:hover': { backgroundColor: '#f0f0f0' } }}
 //             >
 //               <LoginIcon sx={{ mr: 1 }} />
 //               <Typography>Login</Typography>
@@ -85,12 +82,22 @@
 //         </>
 //       ) : (
 //         <>
+//           <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+//             <Avatar 
+//                src={user?.profilePic} 
+//                sx={{ width: 40, height: 40, bgcolor: '#3b82f6' }}
+//             >
+//               {user?.email?.charAt(0).toUpperCase()}
+//             </Avatar>
+//             <Typography variant="body2" noWrap sx={{ fontWeight: 600 }}>
+//               {user?.email}
+//             </Typography>
+//           </Box>
+//           <Divider />
 //           <ListItem disablePadding>
 //             <ListItemButton
 //               onClick={() => handleNavigation('/dashboard')}
-//               sx={{
-//                 '&:hover': { backgroundColor: '#f0f0f0' }
-//               }}
+//               sx={{ '&:hover': { backgroundColor: '#f0f0f0' } }}
 //             >
 //               <DashboardIcon sx={{ mr: 1 }} />
 //               <Typography>Dashboard</Typography>
@@ -100,9 +107,7 @@
 //             <ListItem disablePadding>
 //               <ListItemButton
 //                 onClick={() => handleNavigation('/admin')}
-//                 sx={{
-//                   '&:hover': { backgroundColor: '#f0f0f0' }
-//                 }}
+//                 sx={{ '&:hover': { backgroundColor: '#f0f0f0' } }}
 //               >
 //                 <AdminPanelSettingsIcon sx={{ mr: 1 }} />
 //                 <Typography>Admin Panel</Typography>
@@ -113,9 +118,7 @@
 //           <ListItem disablePadding>
 //             <ListItemButton
 //               onClick={handleLogout}
-//               sx={{
-//                 '&:hover': { backgroundColor: '#ffebee' }
-//               }}
+//               sx={{ '&:hover': { backgroundColor: '#ffebee' } }}
 //             >
 //               <LogoutIcon sx={{ mr: 1, color: '#d32f2f' }} />
 //               <Typography sx={{ color: '#d32f2f' }}>Logout</Typography>
@@ -145,7 +148,7 @@
 //               minHeight: 'auto'
 //             }}
 //           >
-//             {/* Logo / Brand */}
+//             {/* Logo */}
 //             <Typography
 //               variant="h6"
 //               sx={{
@@ -157,192 +160,129 @@
 //                 WebkitTextFillColor: 'transparent',
 //                 cursor: 'pointer',
 //                 transition: 'transform 0.2s',
-//                 '&:hover': {
-//                   transform: 'scale(1.05)'
-//                 }
+//                 '&:hover': { transform: 'scale(1.05)' }
 //               }}
 //               onClick={() => navigate('/')}
 //             >
 //               SecureAuth
 //             </Typography>
 
-// // Navbar.js ke andar
-// <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-//    <ThemeToggle/>
-//    {/* Profile/Logout buttons */}
-// </Box>
-
-//             {/* Desktop Menu */}
-//             <Box
-//               sx={{
-//                 display: { xs: 'none', md: 'flex' },
-//                 gap: 2,
-//                 alignItems: 'center'
-//               }}
-//             >
-//               {!user ? (
-//                 <>
-//                   <Button
-//                     startIcon={<AppRegistrationIcon />}
-//                     onClick={() => navigate('/signup')}
-//                     sx={{
-//                       color: '#fff',
-//                       textTransform: 'none',
-//                       fontSize: '16px',
-//                       '&:hover': {
-//                         backgroundColor: 'rgba(255, 255, 255, 0.1)',
-//                         transform: 'translateY(-2px)'
-//                       },
-//                       transition: 'all 0.3s ease'
-//                     }}
-//                   >
-//                     Sign Up
-//                   </Button>
-//                   <Button
-//                     startIcon={<LoginIcon />}
-//                     onClick={() => navigate('/login')}
-//                     sx={{
-//                       backgroundColor: '#3b82f6',
-//                       color: '#fff',
-//                       textTransform: 'none',
-//                       fontSize: '16px',
-//                       fontWeight: 600,
-//                       px: 3,
-//                       borderRadius: 2,
-//                       '&:hover': {
-//                         backgroundColor: '#2563eb',
-//                         transform: 'translateY(-2px)',
-//                         boxShadow: '0 8px 16px rgba(59, 130, 246, 0.4)'
-//                       },
-//                       transition: 'all 0.3s ease'
-//                     }}
-//                   >
-//                     Login
-//                   </Button>
-//                 </>
-//               ) : (
-//                 <>
-//                   <Button
-//                     startIcon={<DashboardIcon />}
-//                     onClick={() => navigate('/dashboard')}
-//                     sx={{
-//                       color: '#fff',
-//                       textTransform: 'none',
-//                       fontSize: '16px',
-//                       '&:hover': {
-//                         backgroundColor: 'rgba(255, 255, 255, 0.1)',
-//                         transform: 'translateY(-2px)'
-//                       },
-//                       transition: 'all 0.3s ease'
-//                     }}
-//                   >
-//                     Dashboard
-//                   </Button>
-
-//                   {user?.role === 'admin' && (
+//             {/* Desktop Navigation */}
+//             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+//               <ThemeToggle />
+              
+//               <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 2 }}>
+//                 {!user ? (
+//                   <>
 //                     <Button
-//                       startIcon={<AdminPanelSettingsIcon />}
-//                       onClick={() => navigate('/admin')}
-//                       sx={{
-//                         color: '#fbbf24',
-//                         textTransform: 'none',
-//                         fontSize: '16px',
-//                         fontWeight: 600,
-//                         '&:hover': {
-//                           backgroundColor: 'rgba(251, 191, 36, 0.1)',
-//                           transform: 'translateY(-2px)'
-//                         },
-//                         transition: 'all 0.3s ease'
-//                       }}
+//                       startIcon={<AppRegistrationIcon />}
+//                       onClick={() => navigate('/signup')}
+//                       sx={{ color: '#fff', textTransform: 'none' }}
 //                     >
-//                       Admin
+//                       Sign Up
 //                     </Button>
-//                   )}
-
-//                   {/* User Menu */}
-//                   <Box
-//                     sx={{
-//                       display: 'flex',
-//                       alignItems: 'center',
-//                       gap: 1,
-//                       ml: 2,
-//                       pl: 2,
-//                       borderLeft: '1px solid rgba(255, 255, 255, 0.1)'
-//                     }}
-//                   >
-//                     <Avatar
-//                       sx={{
-//                         bgcolor: '#3b82f6',
-//                         cursor: 'pointer',
-//                         fontWeight: 700,
-//                         width: 40,
-//                         height: 40,
-//                         transition: 'transform 0.2s',
-//                         '&:hover': {
-//                           transform: 'scale(1.1)'
-//                         }
-//                       }}
-//                       onClick={handleMenuOpen}
-//                     >
-//                       {user?.email?.charAt(0).toUpperCase()}
-//                     </Avatar>
-//                     <Typography
-//                       sx={{
-//                         color: '#fff',
-//                         fontSize: '14px',
-//                         display: { xs: 'none', lg: 'block' }
+//                     <Button
+//                       startIcon={<LoginIcon />}
+//                       onClick={() => navigate('/login')}
+//                       sx={{ 
+//                         backgroundColor: '#3b82f6', color: '#fff', textTransform: 'none',
+//                         px: 3, borderRadius: 2, fontWeight: 600,
+//                         '&:hover': { backgroundColor: '#2563eb' }
 //                       }}
 //                     >
-//                       {user?.email}
-//                     </Typography>
-//                   </Box>
+//                       Login
+//                     </Button>
+//                   </>
+//                 ) : (
+//                   <>
+//                     <Button
+//                       startIcon={<DashboardIcon />}
+//                       onClick={() => navigate('/dashboard')}
+//                       sx={{ color: '#fff', textTransform: 'none' }}
+//                     >
+//                       Dashboard
+//                     </Button>
 
-//                   {/* Dropdown Menu */}
-//                   <Menu
-//                     anchorEl={anchorEl}
-//                     open={Boolean(anchorEl)}
-//                     onClose={handleMenuClose}
-//                     PaperProps={{
-//                       sx: {
-//                         mt: 1,
-//                         boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)',
-//                         borderRadius: 2,
-//                         minWidth: 200
-//                       }
-//                     }}
-//                   >
-//                     <MenuItem disabled sx={{ pb: 1 }}>
-//                       <Typography variant="body2" sx={{ fontWeight: 600 }}>
+//                     {user?.role === 'admin' && (
+//                       <Button
+//                         startIcon={<AdminPanelSettingsIcon />}
+//                         onClick={() => navigate('/admin')}
+//                         sx={{ color: '#fbbf24', textTransform: 'none', fontWeight: 600 }}
+//                       >
+//                         Admin
+//                       </Button>
+//                     )}
+
+//                     {/* ✅ Avatar with Profile Pic Logic */}
+//                     <Box
+//                       sx={{
+//                         display: 'flex',
+//                         alignItems: 'center',
+//                         gap: 1.5,
+//                         ml: 2,
+//                         pl: 2,
+//                         borderLeft: '1px solid rgba(255, 255, 255, 0.1)'
+//                       }}
+//                     >
+//                       <Avatar
+//                         src={user?.profilePic} // Cloudinary URL automatically handle karega
+//                         sx={{
+//                           bgcolor: '#3b82f6',
+//                           cursor: 'pointer',
+//                           width: 40,
+//                           height: 40,
+//                           border: '2px solid rgba(255,255,255,0.2)',
+//                           transition: 'transform 0.2s',
+//                           '&:hover': { transform: 'scale(1.1)' }
+//                         }}
+//                         onClick={handleMenuOpen}
+//                       >
+//                         {/* Fallback if no image: User's first letter */}
+//                         {user?.email?.charAt(0).toUpperCase()}
+//                       </Avatar>
+//                       <Typography
+//                         sx={{ color: '#fff', fontSize: '14px', display: { xs: 'none', lg: 'block' } }}
+//                       >
 //                         {user?.email}
 //                       </Typography>
-//                     </MenuItem>
-//                     <Divider />
-//                     <MenuItem onClick={handleLogout} sx={{ color: '#d32f2f' }}>
-//                       <LogoutIcon sx={{ mr: 1 }} />
-//                       Logout
-//                     </MenuItem>
-//                   </Menu>
-//                 </>
-//               )}
-//             </Box>
+//                     </Box>
+//                   </>
+//                 )}
+//               </Box>
 
-//             {/* Mobile Menu Icon */}
-//             <IconButton
-//               sx={{ display: { xs: 'flex', md: 'none' }, color: '#fff' }}
-//               onClick={() => setMobileOpen(!mobileOpen)}
-//             >
-//               <MenuIcon />
-//             </IconButton>
+//               {/* Mobile Menu Icon */}
+//               <IconButton
+//                 sx={{ display: { xs: 'flex', md: 'none' }, color: '#fff' }}
+//                 onClick={() => setMobileOpen(!mobileOpen)}
+//               >
+//                 <MenuIcon />
+//               </IconButton>
+//             </Box>
 //           </Toolbar>
 //         </Container>
 //       </AppBar>
 
-//       {/* Mobile Drawer */}
-//       <Drawer
-//         anchor="right"
-//         open={mobileOpen}
-//         onClose={() => setMobileOpen(false)}
+//       {/* User Dropdown Menu */}
+//       <Menu
+//         anchorEl={anchorEl}
+//         open={Boolean(anchorEl)}
+//         onClose={handleMenuClose}
+//         PaperProps={{
+//           sx: { mt: 1, boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)', borderRadius: 2, minWidth: 200 }
+//         }}
 //       >
+//         <MenuItem disabled sx={{ pb: 1 }}>
+//           <Typography variant="body2" sx={{ fontWeight: 600 }}>{user?.email}</Typography>
+//         </MenuItem>
+//         <Divider />
+//         <MenuItem onClick={handleLogout} sx={{ color: '#d32f2f' }}>
+//           <LogoutIcon sx={{ mr: 1 }} />
+//           Logout
+//         </MenuItem>
+//       </Menu>
+
+//       {/* Mobile Drawer */}
+//       <Drawer anchor="right" open={mobileOpen} onClose={() => setMobileOpen(false)}>
 //         {mobileMenuItems}
 //       </Drawer>
 //     </>
@@ -350,7 +290,6 @@
 // }
 
 // export default Navbar
-
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../store/AuthContext'
@@ -369,7 +308,8 @@ import {
   Drawer,
   List,
   ListItem,
-  ListItemButton
+  ListItemButton,
+  ListItemIcon
 } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
 import LogoutIcon from '@mui/icons-material/Logout'
@@ -377,6 +317,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard'
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'
 import LoginIcon from '@mui/icons-material/Login'
 import AppRegistrationIcon from '@mui/icons-material/AppRegistration'
+import SettingsIcon from '@mui/icons-material/Settings' // ✅ Settings Icon import kiya
 import ThemeToggle from './ThemeToggle'
 
 const Navbar = () => {
@@ -455,6 +396,18 @@ const Navbar = () => {
               <Typography>Dashboard</Typography>
             </ListItemButton>
           </ListItem>
+          
+          {/* ✅ Mobile Settings Option */}
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={() => handleNavigation('/settings')}
+              sx={{ '&:hover': { backgroundColor: '#f0f0f0' } }}
+            >
+              <SettingsIcon sx={{ mr: 1 }} />
+              <Typography>Settings</Typography>
+            </ListItemButton>
+          </ListItem>
+
           {user?.role === 'admin' && (
             <ListItem disablePadding>
               <ListItemButton
@@ -565,7 +518,7 @@ const Navbar = () => {
                       </Button>
                     )}
 
-                    {/* ✅ Avatar with Profile Pic Logic */}
+                    {/* Avatar with Profile Pic Logic */}
                     <Box
                       sx={{
                         display: 'flex',
@@ -577,7 +530,7 @@ const Navbar = () => {
                       }}
                     >
                       <Avatar
-                        src={user?.profilePic} // Cloudinary URL automatically handle karega
+                        src={user?.profilePic}
                         sx={{
                           bgcolor: '#3b82f6',
                           cursor: 'pointer',
@@ -589,7 +542,6 @@ const Navbar = () => {
                         }}
                         onClick={handleMenuOpen}
                       >
-                        {/* Fallback if no image: User's first letter */}
                         {user?.email?.charAt(0).toUpperCase()}
                       </Avatar>
                       <Typography
@@ -627,8 +579,19 @@ const Navbar = () => {
           <Typography variant="body2" sx={{ fontWeight: 600 }}>{user?.email}</Typography>
         </MenuItem>
         <Divider />
+        
+        {/* ✅ Desktop Settings Menu Item */}
+        <MenuItem onClick={() => handleNavigation('/settings')}>
+          <ListItemIcon>
+            <SettingsIcon fontSize="small" />
+          </ListItemIcon>
+          Settings
+        </MenuItem>
+
         <MenuItem onClick={handleLogout} sx={{ color: '#d32f2f' }}>
-          <LogoutIcon sx={{ mr: 1 }} />
+          <ListItemIcon>
+            <LogoutIcon fontSize="small" sx={{ color: '#d32f2f' }} />
+          </ListItemIcon>
           Logout
         </MenuItem>
       </Menu>
