@@ -8,6 +8,7 @@ import {
 } from "../controllers/authController.js"
 import { protect, adminOnly } from "../middleware/authMiddleware.js" // adminOnly zaroori hai
 import User from "../models/User.js"
+import { upload } from "../config/cloudinary.js";
 
 const router = express.Router()
 
@@ -44,4 +45,5 @@ router.get("/users", protect, adminOnly, getAllUsers);
 router.delete("/user/:id", protect, adminOnly, deleteUser);
 router.post("/logout", protect, logout); // 'protect' lagana zaroori hai
 router.put("/user/:id", protect, adminOnly, updateUserRole);
+router.put("/update-profile-pic", protect, upload.single('image'), updateProfile);
 export default router
