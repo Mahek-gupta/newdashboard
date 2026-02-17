@@ -145,19 +145,38 @@ export const updateProfile = async (req, res) => {
       return res.status(400).json({ message: "No image uploaded" });
     }
 
-    // ✅ Cloudinary ka path save ho raha hai
+    // 1. Pehle check karein ki image ka URL kahan hai
+    // Multer-Cloudinary aksar 'path' ya 'secure_url' mein URL bhejta hai
+    const imageUrl = req.file.path || req.file.secure_url;
+
+    if (!imageUrl) {
+      return res.status(500).json({ message: "Cloudinary did not return a URL" });
+    }
+
+    // 2. Database update karein
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { profilePic: req.file.path }, 
+      { profilePic: imageUrl }, // Pura URL save karein
       { new: true }
     ).select("-password");
 
-    // ✅ Updated user data frontend ko bhejein
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // 3. Response bhejein
     res.json({ 
-      message: "Profile picture updated", 
-      user: updatedUser 
+      message: "Profile picture updated successfully", 
+      user: {
+        id: updatedUser._id,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        profilePic: updatedUser.profilePic // Frontend ko yehi chahiye
+      } 
     });
+
   } catch (error) {
+    console.error("Update Profile Error:", error);
     res.status(500).json({ message: "Upload failed", error: error.message });
   }
 };
