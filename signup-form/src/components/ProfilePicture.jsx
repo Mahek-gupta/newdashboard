@@ -46,7 +46,7 @@
 import { useState, useEffect } from "react";
 import { Avatar, Button, Box, CircularProgress } from "@mui/material";
 import { toast } from "react-toastify";
-import { useAuth } from "../context/AuthContext"; 
+import { useAuth } from "../store/AuthContext"; 
 import api from "../api/axios"; // Aapka custom axios instance
 
 const ProfilePicture = () => {
