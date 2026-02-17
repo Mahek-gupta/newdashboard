@@ -32,34 +32,65 @@
 //   }
 // };
 
+// // export const login = async (req, res) => {
+// //   try {
+// //     const { email, password } = req.body;
+// //     const user = await User.findOne({ email });
+
+// //     if (!user || !(await bcrypt.compare(password, user.password))) {
+// //       return res.status(401).json({ message: "Invalid credentials" });
+// //     }
+
+// //     user.status = "active";
+// //     user.lastSeen = new Date();
+// //     await user.save();
+
+// //     const accessToken = generateAccessToken(user);
+// //     const refreshToken = generateRefreshToken(user);
+
+// //     res.cookie("refreshToken", refreshToken, {
+// //       httpOnly: true,
+// //       secure: true,
+// //       sameSite: "none",
+// //     });
+
+// //     res.json({
+// //       accessToken,
+// //       user: { email: user.email, role: user.role, status: user.status },
+// //     });
+// //   } catch (error) {
+// //     res.status(500).json({ message: "Login error" });
+// //   }
+// // };
 // export const login = async (req, res) => {
 //   try {
 //     const { email, password } = req.body;
 //     const user = await User.findOne({ email });
 
+//     // 1. Check Credentials
 //     if (!user || !(await bcrypt.compare(password, user.password))) {
 //       return res.status(401).json({ message: "Invalid credentials" });
 //     }
 
-//     user.status = "active";
-//     user.lastSeen = new Date();
+//     // 2. Generate 6-Digit OTP
+//     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+//     user.otp = otp;
+//     user.otpExpire = new Date(Date.now() + 5 * 60 * 1000); // 5 minute validity
 //     await user.save();
 
-//     const accessToken = generateAccessToken(user);
-//     const refreshToken = generateRefreshToken(user);
+//     // 3. Send OTP via Brevo
+//     const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+//     sendSmtpEmail.subject = "Login Verification Code";
+//     sendSmtpEmail.htmlContent = `<h3>Your OTP is: <b style="color:blue;">${otp}</b></h3><p>Valid for 5 minutes only.</p>`;
+//     sendSmtpEmail.sender = { "name": "Security Team", "email": "guptamahek35@gmail.com" };
+//     sendSmtpEmail.to = [{ "email": user.email }];
 
-//     res.cookie("refreshToken", refreshToken, {
-//       httpOnly: true,
-//       secure: true,
-//       sameSite: "none",
-//     });
+//     await apiInstance.sendTransacEmail(sendSmtpEmail);
 
-//     res.json({
-//       accessToken,
-//       user: { email: user.email, role: user.role, status: user.status },
-//     });
+//     // Frontend ko batayein ki ab OTP screen dikhao
+//     res.json({ message: "OTP sent to your email", step: "verify-otp", email: user.email });
 //   } catch (error) {
-//     res.status(500).json({ message: "Login error" });
+//     res.status(500).json({ message: "Login error", error: error.message });
 //   }
 // };
 
@@ -156,12 +187,28 @@
 //   }
 // };
 
+// // ✅ UPDATED: GET USERS WITH PAGINATION
 // export const getAllUsers = async (req, res) => {
 //   try {
-//     const users = await User.find({}, "-password").sort({ createdAt: -1 });
-//     res.status(200).json(users);
+//     const page = parseInt(req.query.page) || 1;
+//     const limit = parseInt(req.query.limit) || 10;
+//     const skip = (page - 1) * limit;
+
+//     const totalUsers = await User.countDocuments();
+
+//     const users = await User.find({}, "-password")
+//       .sort({ createdAt: -1 })
+//       .skip(skip)
+//       .limit(limit);
+
+//     res.status(200).json({
+//       users,
+//       currentPage: page,
+//       totalPages: Math.ceil(totalUsers / limit),
+//       totalUsers,
+//     });
 //   } catch (error) {
-//     res.status(500).json({ message: "Users fetch error" });
+//     res.status(500).json({ message: "Error fetching users", error: error.message });
 //   }
 // };
 
@@ -181,6 +228,33 @@
 //     res.status(200).json({ message: "Role updated" });
 //   } catch (error) {
 //     res.status(500).json({ message: "Update error" });
+//   }
+// };
+// export const verifyOTP = async (req, res) => {
+//   try {
+//     const { email, otp } = req.body;
+//     const user = await User.findOne({ email, otp, otpExpire: { $gt: new Date() } });
+
+//     if (!user) {
+//       return res.status(400).json({ message: "Invalid or expired OTP" });
+//     }
+
+//     // OTP match ho gaya! Ab tokens generate karein
+//     const accessToken = generateAccessToken(user);
+//     const refreshToken = generateRefreshToken(user);
+
+//     // Cleanup OTP fields
+//     user.otp = null;
+//     user.otpExpire = null;
+//     user.status = "active";
+//     user.lastSeen = new Date();
+//     await user.save();
+
+//     res.cookie("refreshToken", refreshToken, { httpOnly: true, secure: true, sameSite: "none" });
+//     res.json({ accessToken, user: { email: user.email, role: user.role } });
+
+//   } catch (error) {
+//     res.status(500).json({ message: "Verification failed" });
 //   }
 // };
 import User from "../models/User.js";
@@ -216,67 +290,109 @@ export const signup = async (req, res) => {
   }
 };
 
-// export const login = async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-//     const user = await User.findOne({ email });
-
-//     if (!user || !(await bcrypt.compare(password, user.password))) {
-//       return res.status(401).json({ message: "Invalid credentials" });
-//     }
-
-//     user.status = "active";
-//     user.lastSeen = new Date();
-//     await user.save();
-
-//     const accessToken = generateAccessToken(user);
-//     const refreshToken = generateRefreshToken(user);
-
-//     res.cookie("refreshToken", refreshToken, {
-//       httpOnly: true,
-//       secure: true,
-//       sameSite: "none",
-//     });
-
-//     res.json({
-//       accessToken,
-//       user: { email: user.email, role: user.role, status: user.status },
-//     });
-//   } catch (error) {
-//     res.status(500).json({ message: "Login error" });
-//   }
-// };
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
 
-    // 1. Check Credentials
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // 2. Generate 6-Digit OTP
+    // ✅ Reset security tracking on fresh login
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     user.otp = otp;
-    user.otpExpire = new Date(Date.now() + 5 * 60 * 1000); // 5 minute validity
+    user.otpExpire = new Date(Date.now() + 5 * 60 * 1000); 
+    user.otpCreatedAt = new Date(); // Track creation time
+    user.resendCount = 0; // Reset count on new login
     await user.save();
 
-    // 3. Send OTP via Brevo
     const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
     sendSmtpEmail.subject = "Login Verification Code";
-    sendSmtpEmail.htmlContent = `<h3>Your OTP is: <b style="color:blue;">${otp}</b></h3><p>Valid for 5 minutes only.</p>`;
+    sendSmtpEmail.htmlContent = `<h3>Your OTP is: <b style="color:blue;">${otp}</b></h3><p>Valid for 5 minutes.</p>`;
     sendSmtpEmail.sender = { "name": "Security Team", "email": "guptamahek35@gmail.com" };
     sendSmtpEmail.to = [{ "email": user.email }];
 
     await apiInstance.sendTransacEmail(sendSmtpEmail);
 
-    // Frontend ko batayein ki ab OTP screen dikhao
     res.json({ message: "OTP sent to your email", step: "verify-otp", email: user.email });
   } catch (error) {
     res.status(500).json({ message: "Login error", error: error.message });
   }
 };
+
+// ✅ NEW: SECURE RESEND OTP CONTROLLER
+export const resendOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // 1. Cooldown Check (60 seconds)
+    const timeDiff = Date.now() - new Date(user.otpCreatedAt).getTime();
+    if (timeDiff < 60000) {
+      const remaining = Math.ceil((60000 - timeDiff) / 1000);
+      return res.status(429).json({ message: `Please wait ${remaining}s before resending.` });
+    }
+
+    // 2. Max Attempts Check (Limit to 5 resends)
+    if (user.resendCount >= 5) {
+      return res.status(403).json({ message: "Resend limit reached. Please try login again." });
+    }
+
+    // 3. Generate New OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.otp = otp;
+    user.otpExpire = new Date(Date.now() + 5 * 60 * 1000);
+    user.otpCreatedAt = new Date();
+    user.resendCount += 1; // Increment attempt
+    await user.save();
+
+    // 4. Send Email
+    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+    sendSmtpEmail.subject = "New Verification Code";
+    sendSmtpEmail.htmlContent = `<h3>Your new OTP is: <b style="color:green;">${otp}</b></h3><p>Attempts used: ${user.resendCount}/5</p>`;
+    sendSmtpEmail.sender = { "name": "Security Team", "email": "guptamahek35@gmail.com" };
+    sendSmtpEmail.to = [{ "email": user.email }];
+
+    await apiInstance.sendTransacEmail(sendSmtpEmail);
+
+    res.json({ message: "New OTP sent successfully", resendCount: user.resendCount });
+  } catch (error) {
+    res.status(500).json({ message: "Resend failed", error: error.message });
+  }
+};
+
+export const verifyOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const user = await User.findOne({ email, otp, otpExpire: { $gt: new Date() } });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    user.otp = null;
+    user.otpExpire = null;
+    user.otpCreatedAt = null; // Cleanup
+    user.resendCount = 0;      // Cleanup
+    user.status = "active";
+    user.lastSeen = new Date();
+    await user.save();
+
+    res.cookie("refreshToken", refreshToken, { httpOnly: true, secure: true, sameSite: "none" });
+    res.json({ accessToken, user: { email: user.email, role: user.role } });
+
+  } catch (error) {
+    res.status(500).json({ message: "Verification failed" });
+  }
+};
+
+// ... (Baki ke controllers: forgotPassword, resetPassword, logout, etc. as it is raheinge)
 
 export const forgotPassword = async (req, res) => {
   try {
@@ -371,7 +487,6 @@ export const refreshToken = async (req, res) => {
   }
 };
 
-// ✅ UPDATED: GET USERS WITH PAGINATION
 export const getAllUsers = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -412,32 +527,5 @@ export const updateUserRole = async (req, res) => {
     res.status(200).json({ message: "Role updated" });
   } catch (error) {
     res.status(500).json({ message: "Update error" });
-  }
-};
-export const verifyOTP = async (req, res) => {
-  try {
-    const { email, otp } = req.body;
-    const user = await User.findOne({ email, otp, otpExpire: { $gt: new Date() } });
-
-    if (!user) {
-      return res.status(400).json({ message: "Invalid or expired OTP" });
-    }
-
-    // OTP match ho gaya! Ab tokens generate karein
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
-
-    // Cleanup OTP fields
-    user.otp = null;
-    user.otpExpire = null;
-    user.status = "active";
-    user.lastSeen = new Date();
-    await user.save();
-
-    res.cookie("refreshToken", refreshToken, { httpOnly: true, secure: true, sameSite: "none" });
-    res.json({ accessToken, user: { email: user.email, role: user.role } });
-
-  } catch (error) {
-    res.status(500).json({ message: "Verification failed" });
   }
 };
