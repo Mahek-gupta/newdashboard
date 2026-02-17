@@ -30,7 +30,8 @@ router.get("/profile", protect, async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
-        role: user.role
+        role: user.role,
+        profilePic: user.profilePic
       }
     })
   } catch (error) {
