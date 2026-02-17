@@ -3,7 +3,7 @@
 import express from "express"
 import { 
   signup, login, refreshToken, logout, verifyOTP,
-  forgotPassword, resetPassword, 
+  forgotPassword, resetPassword, resendOTP
   getAllUsers, deleteUser, updateUserRole // Naye functions import karein
 } from "../controllers/authController.js"
 import { protect, adminOnly } from "../middleware/authMiddleware.js" // adminOnly zaroori hai
@@ -18,6 +18,7 @@ router.post("/verify-otp", verifyOTP)
 router.post("/refresh", refreshToken)
 router.post("/forgot-password", forgotPassword)
 router.post("/reset-password", resetPassword)
+router.post('/resend-otp', resendOTP)
 
 // Protected Profile Route
 router.get("/profile", protect, async (req, res) => {
