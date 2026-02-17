@@ -1,5 +1,7 @@
 
 
+
+// // // export const useAuth = () => useContext(AuthContext)
 // import { createContext, useContext, useEffect, useState } from "react"
 // import api, { setAccessToken, clearAccessToken } from "../api/axios"
 // import { loginApi, logoutApi, signupApi } from "../api/authApi"
@@ -11,13 +13,11 @@
 //   const [loading, setLoading] = useState(true)
 //   const [error, setError] = useState("")
 
-//   /* 🔁 Restore auth on page refresh */
 //   useEffect(() => {
 //     const restoreAuth = async () => {
 //       try {
 //         const res = await api.post("/auth/refresh")
 //         setAccessToken(res.data.accessToken)
-
 //         const profile = await api.get("/auth/profile")
 //         setUser(profile.data.user)
 //       } catch (err) {
@@ -27,29 +27,46 @@
 //         setLoading(false)
 //       }
 //     }
-
 //     restoreAuth()
 //   }, [])
 
-//   useEffect(() => {
-//   console.log("AUTH STATE:", { user, loading })
-// }, [user, loading])
-
-//   /* 🔐 Login */
+//   /* 🔐 Updated Login Logic */
 //   const login = async (email, password) => {
 //     try {
 //       const res = await loginApi({ email, password })
+      
+//       // Case 1: Agar 2FA (OTP) required hai
+//       if (res.data.step === "verify-otp") {
+//         setError("")
+//         return { success: true, step: "otp" }
+//       }
+
+//       // Case 2: Agar direct login ho gaya
+//       setAccessToken(res.data.accessToken)
+//       setUser(res.data.user)
+//       setError("")
+//       return { success: true, step: "dashboard" }
+
+//     } catch (err) {
+//       setError(err.response?.data?.message || "Login failed")
+//       return { success: false }
+//     }
+//   }
+
+//   /* ✅ New: OTP Verification */
+//   const verifyOTP = async (email, otp) => {
+//     try {
+//       const res = await api.post("/auth/verify-otp", { email, otp })
 //       setAccessToken(res.data.accessToken)
 //       setUser(res.data.user)
 //       setError("")
 //       return true
 //     } catch (err) {
-//       setError(err.response?.data?.message || "Login failed")
+//       setError(err.response?.data?.message || "Invalid OTP")
 //       return false
 //     }
 //   }
 
-//   /* 📝 Signup */
 //   const signup = async (email, password) => {
 //     try {
 //       await signupApi({ email, password })
@@ -61,7 +78,6 @@
 //     }
 //   }
 
-//   /* 🚪 Logout */
 //   const logout = async () => {
 //     try {
 //       await logoutApi()
@@ -71,93 +87,14 @@
 //     }
 //   }
 
-//   // if (loading) return <div>Loading...</div>
-
 //   return (
-//     <AuthContext.Provider
-//       value={{ user, login, signup, logout, error, loading }}
-//     >
+//     <AuthContext.Provider value={{ user, login, verifyOTP, signup, logout, error, loading }}>
 //       {children}
 //     </AuthContext.Provider>
 //   )
 // }
 
 // export const useAuth = () => useContext(AuthContext)
-
-
-
-
-// // import React, { createContext, useContext, useEffect, useState } from 'react'
-// // import api, { setAccessToken } from '../api/axios'
-// // import { loginApi, logoutApi, profileTokenApi, refreshTokenApi, signupApi } from '../api/Authapi'
-
-// // const AuthContext = createContext()
-// // export const AuthProvider = ({children}) => {
-// //   const [loading, setLoading] =  useState(true)
-// //   const [user, setUser] = useState(null)
-// //   const [error, setError] = useState("")
-
-
-// //   useEffect(()=>{
-// //     const restoreAuth = async (req, res)=>{
-// //       try{
-// //         const res = await api.post('/auth/refresh')
-// //         console.log(api.interceptors.request.use)
-// //         setAccessToken(res.data.accessToken)
-// //         const profile = await api.get('/auth/profile')
-// // console.log(api)
-// //       }
-// //       catch(err){
-// //         console.log("No active session", err)
-// //       }finally{
-// //         setLoading(false)
-// //       }
-// //     }
-// //     restoreAuth()
-// //   })
-
-// // const login = async(email, password)=>{
-// //   try{
-// //     const res = await loginApi({email, password})
-// //     setAccessToken(res.data.accesstoken)
-// //     setUser(res.data.user)
-// //     setError("")
-// //     return true
-// //   }
-// // catch(err){
-// //     setError(err.response?.data?.message || "Login failed")
-// //     return false
-// // }
-// // }
-
-// // const signup  = async(email, password)=>{
-// //   try{
-// // await signupApi({email, password})
-// // setError("")
-// // return true
-// //   }
-// //   catch(err){
-// //     setError(err.response?.data?.message || "Signup failed")
-// //   }
-// // }
-
-// // const logout = async()=>{
-// //   try{
-// //     await logoutApi()
-// //   }finally{
-// //     setAccessToken(null)
-// //     setUser(null)
-// //   }
-// // }
-// //   return (
-// //   <AuthContext.Provider  value={{user, login, error, signup, logout, loading}}>
-// //     {children}
-// //   </AuthContext.Provider>
-// //   )
-// // }
-
-
-// // export const useAuth = () => useContext(AuthContext)
 import { createContext, useContext, useEffect, useState } from "react"
 import api, { setAccessToken, clearAccessToken } from "../api/axios"
 import { loginApi, logoutApi, signupApi } from "../api/authApi"
@@ -169,6 +106,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
+  // Restore session on refresh
   useEffect(() => {
     const restoreAuth = async () => {
       try {
@@ -186,18 +124,16 @@ export const AuthProvider = ({ children }) => {
     restoreAuth()
   }, [])
 
-  /* 🔐 Updated Login Logic */
+  /* 🔐 Login Logic */
   const login = async (email, password) => {
     try {
       const res = await loginApi({ email, password })
       
-      // Case 1: Agar 2FA (OTP) required hai
       if (res.data.step === "verify-otp") {
         setError("")
         return { success: true, step: "otp" }
       }
 
-      // Case 2: Agar direct login ho gaya
       setAccessToken(res.data.accessToken)
       setUser(res.data.user)
       setError("")
@@ -209,7 +145,7 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  /* ✅ New: OTP Verification */
+  /* ✅ OTP Verification */
   const verifyOTP = async (email, otp) => {
     try {
       const res = await api.post("/auth/verify-otp", { email, otp })
@@ -221,6 +157,23 @@ export const AuthProvider = ({ children }) => {
       setError(err.response?.data?.message || "Invalid OTP")
       return false
     }
+  }
+
+  /* 🔄 New: Resend OTP (Bina existing logic chede) */
+  const resendOTP = async (email) => {
+    try {
+      const res = await api.post("/auth/resend-otp", { email })
+      return { success: true, message: res.data.message }
+    } catch (err) {
+      const msg = err.response?.data?.message || "Failed to resend OTP"
+      setError(msg)
+      return { success: false, message: msg }
+    }
+  }
+
+  /* 📸 New: Update Profile State (Photo upload ke baad state sync karne ke liye) */
+  const updateProfileState = (userData) => {
+    setUser(userData)
   }
 
   const signup = async (email, password) => {
@@ -244,7 +197,10 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, verifyOTP, signup, logout, error, loading }}>
+    <AuthContext.Provider value={{ 
+      user, login, verifyOTP, resendOTP, signup, logout, 
+      updateProfileState, error, loading 
+    }}>
       {children}
     </AuthContext.Provider>
   )
