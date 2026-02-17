@@ -529,3 +529,23 @@ export const updateUserRole = async (req, res) => {
     res.status(500).json({ message: "Update error" });
   }
 };
+export const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user.id; // Auth middleware se milega
+    
+    if (!req.file) {
+      return res.status(400).json({ message: "No image uploaded" });
+    }
+
+    // Cloudinary ka URL user model mein save karein
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { profilePic: req.file.path }, // Multer-cloudinary path return karta hai
+      { new: true }
+    ).select("-password");
+
+    res.json({ message: "Profile picture updated", user: updatedUser });
+  } catch (error) {
+    res.status(500).json({ message: "Upload failed", error: error.message });
+  }
+};
