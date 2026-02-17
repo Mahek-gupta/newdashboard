@@ -32,7 +32,10 @@ lastSeen: {
   default: Date.now
 },
   otp: { type: String, default: null },
-otpExpire: { type: Date, default: null }
+otpExpire: { type: Date, default: null },
+  // models/User.js mein ye 2 fields zaroor honi chahiye
+otpCreatedAt: { type: Date },
+resendCount: { type: Number, default: 0 }
 }, 
 
 { timestamps: true })
