@@ -3,8 +3,8 @@
 import express from "express"
 import { 
   signup, login, refreshToken, logout, verifyOTP,
-  forgotPassword, resetPassword, resendOTP
-  getAllUsers, deleteUser, updateUserRole // Naye functions import karein
+  forgotPassword, resetPassword, resendOTP,
+  getAllUsers, deleteUser, updateUserRole
 } from "../controllers/authController.js"
 import { protect, adminOnly } from "../middleware/authMiddleware.js" // adminOnly zaroori hai
 import User from "../models/User.js"
