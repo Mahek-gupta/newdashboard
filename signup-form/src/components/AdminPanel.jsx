@@ -46,10 +46,12 @@ const AdminPanel = () => {
   const [loading, setLoading] = useState(true);
   const [newUser, setNewUser] = useState({ email: '', password: '', role: 'user' });
 
+  // ✅ Pagination States
   const [page, setPage] = useState(0); 
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalUsers, setTotalUsers] = useState(0);
 
+  // Dummy data for graph
   const chartData = [
     { name: 'Mon', active: 40 }, { name: 'Tue', active: 30 },
     { name: 'Wed', active: 65 }, { name: 'Thu', active: 45 },
@@ -57,10 +59,12 @@ const AdminPanel = () => {
     { name: 'Sun', active: 85 },
   ];
 
+  // ✅ Updated Fetch Logic with Pagination
   const fetchUsers = async (currentPage = 0, currentLimit = 10) => {
     try {
       setLoading(true);
       const response = await api.get(`/auth/users?page=${currentPage + 1}&limit=${currentLimit}`);
+      
       if (response.data.users) {
         setUsers(response.data.users);
         setTotalUsers(response.data.totalUsers || response.data.users.length);
@@ -165,12 +169,14 @@ const AdminPanel = () => {
   return (
     <Box sx={{ 
       minHeight: "calc(100vh - 64px)", 
-      width: "100%", px: { xs: 1, sm: 2 }, py: 4, 
+      width: "100%", 
+      px: { xs: 1, sm: 2 }, // Adjusted padding for very small screens
+      py: 4, 
       background: isDark 
         ? `linear-gradient(135deg, ${theme.palette.background.default} 0%, #000 100%)` 
         : "linear-gradient(135deg, #f0f4f8 0%, #e8ecf1 100%)",
       transition: "background 0.3s ease",
-      overflowX: 'hidden' // ✅ Screen se bahar jane se rokta hai
+      overflowX: 'hidden' // ✅ Prevents the entire page from scrolling horizontally
     }}>
       <Container maxWidth="xl" disableGutters={isMobile}>
         <Box sx={{ mb: 4, px: { xs: 2, sm: 0 } }}>
@@ -183,7 +189,7 @@ const AdminPanel = () => {
           <Typography variant="body1" color="text.secondary">Manage real-time users and system health</Typography>
         </Box>
 
-        {/* Stats Grid - Fixed for Mobile */}
+        {/* Stats Grid */}
         <Grid container spacing={3} sx={{ mb: 4, px: { xs: 2, sm: 0 } }}>
           {[
             { label: "Total Users", val: totalUsers, icon: <PeopleIcon />, grad: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
@@ -218,11 +224,11 @@ const AdminPanel = () => {
         }}>
           <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
             <Tabs 
-              value={tabValue} 
-              onChange={(e, v) => setTabValue(v)} 
-              sx={{ px: 2 }} 
-              variant={isMobile ? "scrollable" : "standard"}
-              scrollButtons="auto"
+                value={tabValue} 
+                onChange={(e, v) => setTabValue(v)} 
+                sx={{ px: 2 }} 
+                variant={isMobile ? "scrollable" : "standard"} // ✅ Fixed: Allows tabs to scroll on mobile instead of breaking
+                scrollButtons="auto"
             >
               <Tab label="User Management" icon={<PeopleIcon />} iconPosition="start" />
               <Tab label="Security & Analytics" icon={<SecurityIcon />} iconPosition="start" />
@@ -230,20 +236,20 @@ const AdminPanel = () => {
           </Box>
 
           <TabPanel value={tabValue} index={0}>
-            {/* Table Header Actions - Fixed for Mobile Stacking */}
+            {/* Table Header Actions */}
             <Box sx={{ 
-              display: "flex", 
-              flexDirection: isMobile ? 'column' : 'row',
-              justifyContent: "space-between", 
-              alignItems: isMobile ? 'flex-start' : 'center', 
-              px: 3, mb: 3, gap: 2 
+                display: "flex", 
+                flexWrap: "wrap", 
+                justifyContent: "space-between", 
+                alignItems: 'center', 
+                px: 3, mb: 3, gap: 2 
             }}>
               <Typography variant="h6" sx={{ fontWeight: 700 }}>Registered Users</Typography>
               <Box sx={{ 
-                display: 'flex', 
-                flexDirection: isMobile ? 'column' : 'row', 
-                gap: 2, 
-                width: isMobile ? '100%' : 'auto' 
+                  display: 'flex', 
+                  flexWrap: 'wrap', // ✅ Fixed: Buttons will wrap on small screens
+                  gap: 2, 
+                  width: isMobile ? '100%' : 'auto' 
               }}>
                 <TextField
                   size="small"
@@ -253,23 +259,23 @@ const AdminPanel = () => {
                   sx={{ width: isMobile ? '100%' : '250px', bgcolor: isDark ? alpha('#fff', 0.05) : '#f9fafb', borderRadius: 1 }}
                   InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment>) }}
                 />
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                  <Button fullWidth variant="outlined" startIcon={<DownloadIcon />} onClick={exportToCSV} sx={{ textTransform: "none" }}>Export</Button>
-                  <Button fullWidth variant="contained" startIcon={<AddIcon />} onClick={() => setOpenDialog(true)} sx={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", textTransform: "none" }}>Add New</Button>
+                <Box sx={{ display: 'flex', gap: 2, width: isMobile ? '100%' : 'auto' }}>
+                    <Button fullWidth={isMobile} variant="outlined" startIcon={<DownloadIcon />} onClick={exportToCSV} sx={{ textTransform: "none" }}>Export</Button>
+                    <Button fullWidth={isMobile} variant="contained" startIcon={<AddIcon />} onClick={() => setOpenDialog(true)} sx={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", textTransform: "none" }}>Add New</Button>
                 </Box>
               </Box>
             </Box>
 
-            {/* ✅ Table Scroll Fixed: Only the table will scroll, not the whole page */}
+            {/* ✅ Fixed: Added horizontal scroll ONLY for the table, keeping UI intact */}
             <TableContainer sx={{ maxHeight: 500, overflowX: 'auto' }}>
-              <Table stickyHeader sx={{ minWidth: 700 }}>
+              <Table stickyHeader sx={{ minWidth: 800 }}> 
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: isDark ? alpha('#fff', 0.1) : "#f3f4f6" }}>User Info</TableCell>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: isDark ? alpha('#fff', 0.1) : "#f3f4f6" }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: isDark ? alpha('#fff', 0.1) : "#f3f4f6" }}>Role</TableCell>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: isDark ? alpha('#fff', 0.1) : "#f3f4f6" }}>Joined Date</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 700, bgcolor: isDark ? alpha('#fff', 0.1) : "#f3f4f6" }}>Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: isDark ? alpha('#fff', 0.05) : "#f3f4f6" }}>User Info</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: isDark ? alpha('#fff', 0.05) : "#f3f4f6" }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: isDark ? alpha('#fff', 0.05) : "#f3f4f6" }}>Role</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: isDark ? alpha('#fff', 0.05) : "#f3f4f6" }}>Joined Date</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 700, bgcolor: isDark ? alpha('#fff', 0.05) : "#f3f4f6" }}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -318,7 +324,7 @@ const AdminPanel = () => {
           </TabPanel>
 
           <TabPanel value={tabValue} index={1}>
-            <Box sx={{ p: 3 }}>
+            <Box sx={{ p: { xs: 1, sm: 3 } }}>
               <Grid container spacing={3}>
                 <Grid item xs={12} md={8}>
                   <Card variant="outlined" sx={{ borderRadius: 2, bgcolor: 'transparent' }}>
@@ -327,7 +333,7 @@ const AdminPanel = () => {
                       <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Real-time Traffic Activity</Typography>
                     </Box>
                     <Divider />
-                    <Box sx={{ p: 2, height: 300, width: '100%' }}>
+                    <Box sx={{ p: 2, height: 300 }}>
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={chartData}>
                           <defs>
@@ -347,9 +353,9 @@ const AdminPanel = () => {
                   </Card>
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <Card variant="outlined" sx={{ borderRadius: 2, p: 3, height: '100%', bgcolor: 'transparent', textAlign: 'center' }}>
+                  <Card variant="outlined" sx={{ borderRadius: 2, p: 3, height: '100%', bgcolor: 'transparent' }}>
                     <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>System Security</Typography>
-                    <Box sx={{ py: 2 }}>
+                    <Box sx={{ textAlign: 'center', py: 2 }}>
                         <SecurityIcon sx={{ fontSize: 60, color: '#10b981', mb: 2 }} />
                         <Typography variant="h6">Firewall Active</Typography>
                         <Typography variant="body2" color="text.secondary">All requests monitored.</Typography>
@@ -362,6 +368,7 @@ const AdminPanel = () => {
         </Paper>
       </Container>
 
+      {/* Add User Dialog */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="xs">
         <DialogTitle sx={{ fontWeight: 700 }}>Add New User</DialogTitle>
         <DialogContent dividers>
