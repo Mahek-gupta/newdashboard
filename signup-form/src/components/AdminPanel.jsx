@@ -37,7 +37,7 @@ function TabPanel(props) {
 const AdminPanel = () => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
-  const isMobile = useMediaQuery(theme.breakpoints.down('md')); // Tablet & Mobile logic
+  const isMobile = useMediaQuery(theme.breakpoints.down('md')); 
   
   const [tabValue, setTabValue] = useState(0);
   const [openDialog, setOpenDialog] = useState(false);
@@ -105,10 +105,9 @@ const AdminPanel = () => {
     <Box sx={{ 
       minHeight: "100vh", width: "100%", py: 4, px: { xs: 1, sm: 3 },
       background: isDark ? "#000" : "#f4f7fe",
-      overflow: "hidden" // No Page Level Scroll
+      overflowX: "hidden" 
     }}>
       <Container maxWidth="xl">
-        {/* Header Section */}
         <Box sx={{ mb: 4 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <AdminPanelSettingsIcon sx={{ fontSize: { xs: 30, md: 40 }, color: "#fbbf24" }} />
@@ -118,7 +117,6 @@ const AdminPanel = () => {
           </Box>
         </Box>
 
-        {/* Stats Grid */}
         <Grid container spacing={2} sx={{ mb: 4 }}>
           {[
             { label: "Total Users", val: totalUsers, icon: <PeopleIcon />, grad: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
@@ -137,14 +135,13 @@ const AdminPanel = () => {
           ))}
         </Grid>
 
-        <Paper sx={{ borderRadius: 4, overflow: "hidden", elevation: 0, border: `1px solid ${theme.palette.divider}` }}>
+        <Paper sx={{ borderRadius: 4, overflow: "hidden", border: `1px solid ${theme.palette.divider}`, mb: 2 }}>
           <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)} variant="fullWidth">
             <Tab label="Users" icon={<PeopleIcon />} iconPosition="start" />
             <Tab label="Analytics" icon={<SecurityIcon />} iconPosition="start" />
           </Tabs>
 
           <TabPanel value={tabValue} index={0}>
-            {/* Action Bar */}
             <Box sx={{ p: 2, display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 2, justifyContent: "space-between" }}>
               <TextField 
                 size="small" 
@@ -157,9 +154,7 @@ const AdminPanel = () => {
               <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenDialog(true)}>Add User</Button>
             </Box>
 
-            {/* ✅ LOGIC: Desktop Table vs Mobile Cards */}
             {!isMobile ? (
-              /* DESKTOP TABLE - No Change in UI */
               <TableContainer>
                 <Table>
                   <TableHead sx={{ bgcolor: isDark ? alpha("#fff", 0.05) : "#f8f9fa" }}>
@@ -203,7 +198,6 @@ const AdminPanel = () => {
                 </Table>
               </TableContainer>
             ) : (
-              /* ✅ MOBILE CARDS - No Horizontal Scroll */
               <Box sx={{ p: 2 }}>
                 {filteredUsers.map((user) => (
                   <Card key={user._id} sx={{ mb: 2, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }} elevation={0}>
@@ -265,7 +259,33 @@ const AdminPanel = () => {
           </TabPanel>
         </Paper>
       </Container>
-    </Paper>
+
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="xs">
+        <DialogTitle sx={{ fontWeight: 700 }}>Add New User</DialogTitle>
+        <DialogContent dividers>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+            <TextField label="Email" fullWidth value={newUser.email} onChange={(e) => setNewUser({...newUser, email: e.target.value})} />
+            <TextField label="Password" type="password" fullWidth value={newUser.password} onChange={(e) => setNewUser({...newUser, password: e.target.value})} />
+            <TextField select label="Role" SelectProps={{ native: true }} fullWidth value={newUser.role} onChange={(e) => setNewUser({...newUser, role: e.target.value})} >
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+            </TextField>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+          <Button variant="contained" onClick={async () => {
+              if(!newUser.email || !newUser.password) return toast.warning("Fill all fields");
+              try {
+                await api.post('/auth/signup', newUser);
+                toast.success("User added!");
+                setOpenDialog(false);
+                fetchUsers(page, rowsPerPage);
+              } catch (e) { toast.error("Error adding user"); }
+          }}>Create User</Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 };
 
