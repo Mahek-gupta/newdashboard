@@ -8,3 +8,39 @@ html, body, #root {
   height: 100%;
   width: 100%;
 }
+/* ✨ Glowing Aura Effect ✨ */
+.glow-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0; /* Content ke piche but background ke upar */
+  pointer-events: none;
+  transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Blurry Roshni effect - Top center se spread hogi */
+  background: radial-gradient(
+    circle at 50% -10%, 
+    var(--glow-color) 0%, 
+    transparent 60%
+  );
+  filter: blur(60px);
+  opacity: 0.8;
+  animation: pulseGlow 8s infinite alternate ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0% { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(1.2); opacity: 0.8; }
+}
+
+/* Light Mode Colors (Blue Aura) */
+:root {
+  --glow-color: rgba(96, 165, 250, 0.4); 
+}
+
+/* Dark Mode Colors (Violet/Indigo Aura) */
+[data-theme='dark'] {
+  --glow-color: rgba(139, 92, 246, 0.3);
+}
