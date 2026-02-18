@@ -318,3 +318,51 @@ export const updateUserRole = async (req, res) => {
     res.status(500).json({ message: "Update error" });
   }
 };
+// 1. Update Email
+exports.updateEmail = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const userId = req.user.id; // Yeh auth middleware se aayega
+
+        // Check karein ki email pehle se exist toh nahi karti
+        const emailExists = await User.findOne({ email });
+        if (emailExists) {
+            return res.status(400).json({ message: "Email already in use" });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { email: email },
+            { new: true }
+        ).select("-password");
+
+        res.status(200).json({ message: "Email updated successfully", user: updatedUser });
+    } catch (error) {
+        res.status(500).json({ message: "Server Error", error: error.message });
+    }
+};
+
+// 2. Update Password (Secure Way)
+exports.updatePassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const userId = req.user.id;
+
+        const user = await User.findById(userId);
+
+        // 1. Purana password verify karein
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: "Current password is incorrect" });
+        }
+
+        // 2. Naya password hash karein
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(newPassword, salt);
+
+        await user.save();
+        res.status(200).json({ message: "Password updated successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Server Error", error: error.message });
+    }
+};
