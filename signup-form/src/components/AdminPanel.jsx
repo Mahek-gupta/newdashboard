@@ -29,7 +29,7 @@ function TabPanel(props) {
   const { children, value, index, ...other } = props;
   return (
     <div role="tabpanel" hidden={value !== index} {...other}>
-      {value === index && <Box sx={{ pt: { xs: 2, sm: 3 } }}>{children}</Box>}
+      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
     </div>
   );
 }
@@ -38,7 +38,6 @@ const AdminPanel = () => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   
   const [tabValue, setTabValue] = useState(0);
   const [openDialog, setOpenDialog] = useState(false);
@@ -47,7 +46,7 @@ const AdminPanel = () => {
   const [loading, setLoading] = useState(true);
   const [newUser, setNewUser] = useState({ email: '', password: '', role: 'user' });
 
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(0); 
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalUsers, setTotalUsers] = useState(0);
 
@@ -62,7 +61,6 @@ const AdminPanel = () => {
     try {
       setLoading(true);
       const response = await api.get(`/auth/users?page=${currentPage + 1}&limit=${currentLimit}`);
-      
       if (response.data.users) {
         setUsers(response.data.users);
         setTotalUsers(response.data.totalUsers || response.data.users.length);
@@ -83,10 +81,13 @@ const AdminPanel = () => {
     return () => clearInterval(interval);
   }, [page, rowsPerPage]);
 
-  const handleChangePage = (event, newPage) => setPage(newPage);
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
 
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
+    const newLimit = parseInt(event.target.value, 10);
+    setRowsPerPage(newLimit);
     setPage(0);
   };
 
@@ -104,14 +105,19 @@ const AdminPanel = () => {
     const blob = new Blob([headers + rows.join("\n")], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = 'users_list.csv';
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', 'users_list.csv');
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     toast.success("CSV Downloaded!");
   };
 
   const handleAddUser = async () => {
-    if(!newUser.email || !newUser.password) return toast.warning("Please fill all fields");
+    if(!newUser.email || !newUser.password) {
+        return toast.warning("Please fill all fields");
+    }
     try {
       await api.post('/auth/signup', newUser);
       toast.success("User added successfully!");
@@ -124,12 +130,14 @@ const AdminPanel = () => {
   };
 
   const handleDeleteUser = async (id) => {
-    if (window.confirm("Are you sure?")) {
+    if (window.confirm("Are you sure you want to delete this user?")) {
       try {
         await api.delete(`/auth/user/${id}`);
         toast.success("User deleted!");
         fetchUsers(page, rowsPerPage);
-      } catch (error) { toast.error("Failed to delete user"); }
+      } catch (error) {
+        toast.error("Failed to delete user");
+      }
     }
   };
 
@@ -139,7 +147,9 @@ const AdminPanel = () => {
       await api.put(`/auth/user/${user._id}`, { role: newRole });
       toast.success(`Role updated to ${newRole}`);
       fetchUsers(page, rowsPerPage);
-    } catch (error) { toast.error("Failed to update role"); }
+    } catch (error) {
+      toast.error("Failed to update role");
+    }
   };
 
   const filteredUsers = users.filter(user => 
@@ -154,37 +164,46 @@ const AdminPanel = () => {
 
   return (
     <Box sx={{ 
-      minHeight: "100vh", width: "100%", 
-      px: { xs: 1, sm: 2 }, py: { xs: 2, sm: 4 }, 
+      minHeight: "calc(100vh - 64px)", 
+      width: "100%", px: { xs: 1, sm: 2 }, py: 4, 
       background: isDark 
         ? `linear-gradient(135deg, ${theme.palette.background.default} 0%, #000 100%)` 
         : "linear-gradient(135deg, #f0f4f8 0%, #e8ecf1 100%)",
-      overflowX: "hidden" // ✅ Prevent side scroll
+      transition: "background 0.3s ease",
+      overflowX: 'hidden' // ✅ Screen se bahar jane se rokta hai
     }}>
       <Container maxWidth="xl" disableGutters={isMobile}>
         <Box sx={{ mb: 4, px: { xs: 2, sm: 0 } }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
-            <AdminPanelSettingsIcon sx={{ fontSize: isMobile ? 32 : 40, color: "#fbbf24" }} />
-            <Typography variant={isMobile ? "h5" : "h3"} sx={{ fontWeight: 800, color: theme.palette.text.primary }}>
-              Admin Center
+            <AdminPanelSettingsIcon sx={{ fontSize: 40, color: "#fbbf24" }} />
+            <Typography variant={isMobile ? "h4" : "h3"} sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
+              Admin Control Center
             </Typography>
           </Box>
-          <Typography variant="body2" color="text.secondary">Real-time system management</Typography>
+          <Typography variant="body1" color="text.secondary">Manage real-time users and system health</Typography>
         </Box>
 
-        {/* Stats Grid */}
-        <Grid container spacing={isMobile ? 2 : 3} sx={{ mb: 4, px: { xs: 2, sm: 0 } }}>
+        {/* Stats Grid - Fixed for Mobile */}
+        <Grid container spacing={3} sx={{ mb: 4, px: { xs: 2, sm: 0 } }}>
           {[
             { label: "Total Users", val: totalUsers, icon: <PeopleIcon />, grad: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
-            { label: "Active", val: users.filter(u => isOnline(u)).length, icon: <SecurityIcon />, grad: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
-            { label: "Health", val: "99.9%", icon: <AnalyticsIcon />, grad: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" },
-            { label: "DB Status", val: "Live", icon: <AdminPanelSettingsIcon />, grad: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)" }
+            { label: "Active Users", val: users.filter(u => isOnline(u)).length, icon: <SecurityIcon />, grad: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
+            { label: "System Health", val: "99.9%", icon: <AnalyticsIcon />, grad: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" },
+            { label: "Database", val: "Live", icon: <AdminPanelSettingsIcon />, grad: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)" }
           ].map((item, index) => (
-            <Grid item xs={6} md={3} key={index}>
-              <Card sx={{ background: item.grad, color: "#fff", borderRadius: 3 }}>
-                <CardContent sx={{ p: { xs: 1.5, sm: 2 }, '&:last-child': { pb: { xs: 1.5, sm: 2 } } }}>
-                  <Typography variant="caption" sx={{ opacity: 0.8, display: 'block' }}>{item.label}</Typography>
-                  <Typography variant={isMobile ? "h6" : "h4"} sx={{ fontWeight: 700 }}>{item.val}</Typography>
+            <Grid item xs={12} sm={6} md={3} key={index}>
+              <Card sx={{ 
+                background: item.grad, color: "#fff", borderRadius: 2,
+                transition: 'transform 0.3s ease', '&:hover': { transform: 'translateY(-5px)' }
+              }}>
+                <CardContent>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <Box>
+                      <Typography variant="body2" sx={{ opacity: 0.9 }}>{item.label}</Typography>
+                      <Typography variant="h4" sx={{ fontWeight: 700 }}>{item.val}</Typography>
+                    </Box>
+                    {React.cloneElement(item.icon, { sx: { fontSize: 40, opacity: 0.3 } })}
+                  </Box>
                 </CardContent>
               </Card>
             </Grid>
@@ -192,69 +211,92 @@ const AdminPanel = () => {
         </Grid>
 
         <Paper elevation={0} sx={{ 
-          background: theme.palette.background.paper, borderRadius: { xs: 0, sm: 4 }, 
-          border: isMobile ? 'none' : `1px solid ${theme.palette.divider}`,
-          overflow: 'hidden', mx: { xs: -1, sm: 0 } 
+          background: theme.palette.background.paper, 
+          borderRadius: 2, border: `1px solid ${theme.palette.divider}`,
+          overflow: 'hidden',
+          mx: { xs: 1, sm: 0 }
         }}>
           <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-            <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)} variant="fullWidth">
-              <Tab label={isMobile ? "" : "Users"} icon={<PeopleIcon />} iconPosition="start" />
-              <Tab label={isMobile ? "" : "Analytics"} icon={<SecurityIcon />} iconPosition="start" />
+            <Tabs 
+              value={tabValue} 
+              onChange={(e, v) => setTabValue(v)} 
+              sx={{ px: 2 }} 
+              variant={isMobile ? "scrollable" : "standard"}
+              scrollButtons="auto"
+            >
+              <Tab label="User Management" icon={<PeopleIcon />} iconPosition="start" />
+              <Tab label="Security & Analytics" icon={<SecurityIcon />} iconPosition="start" />
             </Tabs>
           </Box>
 
           <TabPanel value={tabValue} index={0}>
-            {/* Header Actions */}
-            <Box sx={{ px: { xs: 2, sm: 3 }, mb: 3 }}>
-               <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>User Management</Typography>
-               <Box sx={{ 
-                 display: "flex", flexOverlay: 'wrap', gap: 1, 
-                 flexDirection: isMobile ? 'column' : 'row' 
-               }}>
+            {/* Table Header Actions - Fixed for Mobile Stacking */}
+            <Box sx={{ 
+              display: "flex", 
+              flexDirection: isMobile ? 'column' : 'row',
+              justifyContent: "space-between", 
+              alignItems: isMobile ? 'flex-start' : 'center', 
+              px: 3, mb: 3, gap: 2 
+            }}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>Registered Users</Typography>
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: isMobile ? 'column' : 'row', 
+                gap: 2, 
+                width: isMobile ? '100%' : 'auto' 
+              }}>
                 <TextField
-                  fullWidth={isMobile} size="small" placeholder="Search email..."
-                  value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                  sx={{ maxWidth: isMobile ? '100%' : '300px' }}
+                  size="small"
+                  placeholder="Search email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  sx={{ width: isMobile ? '100%' : '250px', bgcolor: isDark ? alpha('#fff', 0.05) : '#f9fafb', borderRadius: 1 }}
                   InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment>) }}
                 />
-                <Box sx={{ display: 'flex', gap: 1 }}>
+                <Box sx={{ display: 'flex', gap: 2 }}>
                   <Button fullWidth variant="outlined" startIcon={<DownloadIcon />} onClick={exportToCSV} sx={{ textTransform: "none" }}>Export</Button>
-                  <Button fullWidth variant="contained" startIcon={<AddIcon />} onClick={() => setOpenDialog(true)} sx={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", textTransform: "none" }}>Add</Button>
+                  <Button fullWidth variant="contained" startIcon={<AddIcon />} onClick={() => setOpenDialog(true)} sx={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", textTransform: "none" }}>Add New</Button>
                 </Box>
               </Box>
             </Box>
 
-            <TableContainer sx={{ width: '100%', overflowX: 'auto' }}>
-              <Table size={isMobile ? "small" : "medium"}>
+            {/* ✅ Table Scroll Fixed: Only the table will scroll, not the whole page */}
+            <TableContainer sx={{ maxHeight: 500, overflowX: 'auto' }}>
+              <Table stickyHeader sx={{ minWidth: 700 }}>
                 <TableHead>
-                  <TableRow sx={{ bgcolor: isDark ? alpha('#fff', 0.05) : "#f8fafc" }}>
-                    <TableCell sx={{ fontWeight: 700 }}>User</TableCell>
-                    {!isMobile && <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>}
-                    <TableCell sx={{ fontWeight: 700 }}>Role</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 700 }}>Actions</TableCell>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: isDark ? alpha('#fff', 0.1) : "#f3f4f6" }}>User Info</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: isDark ? alpha('#fff', 0.1) : "#f3f4f6" }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: isDark ? alpha('#fff', 0.1) : "#f3f4f6" }}>Role</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: isDark ? alpha('#fff', 0.1) : "#f3f4f6" }}>Joined Date</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 700, bgcolor: isDark ? alpha('#fff', 0.1) : "#f3f4f6" }}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {filteredUsers.map((user) => (
-                    <TableRow key={user._id}>
+                    <TableRow key={user._id} sx={{ "&:hover": { background: isDark ? alpha('#fff', 0.02) : "#f9fafb" } }}>
                       <TableCell>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                          <Avatar sx={{ width: 32, height: 32, fontSize: 14, bgcolor: isOnline(user) ? "#10b981" : "#6b7280" }}>{user.email[0].toUpperCase()}</Avatar>
-                          <Box>
-                             <Typography variant="body2" sx={{ fontWeight: 600, fontSize: isMobile ? '0.75rem' : '0.875rem' }}>{user.email.split('@')[0]}</Typography>
-                             {isMobile && <Typography variant="caption" color={isOnline(user) ? "success.main" : "text.disabled"}>{isOnline(user) ? "Online" : "Offline"}</Typography>}
-                          </Box>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                          <Avatar sx={{ bgcolor: isOnline(user) ? "#10b981" : "#6b7280" }}>{user.email[0].toUpperCase()}</Avatar>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>{user.email}</Typography>
                         </Box>
                       </TableCell>
-                      {!isMobile && (
-                        <TableCell>
-                          <Chip label={isOnline(user) ? "Online" : "Offline"} size="small" color={isOnline(user) ? "success" : "default"} variant="soft" />
-                        </TableCell>
-                      )}
-                      <TableCell><Chip label={user.role} size="small" variant="outlined" /></TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <CircleIcon sx={{ fontSize: 12, color: isOnline(user) ? "#10b981" : "#d1d5db" }} />
+                          <Typography variant="body2" sx={{ color: isOnline(user) ? "#10b981" : "text.secondary" }}>{isOnline(user) ? "Online" : "Offline"}</Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell><Chip label={user.role} size="small" variant="outlined" sx={{ fontWeight: 600 }} /></TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ color: "text.secondary", display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <CalendarMonthIcon sx={{ fontSize: 16 }} />
+                          {new Date(user.createdAt).toLocaleDateString()}
+                        </Typography>
+                      </TableCell>
                       <TableCell align="right">
-                        <IconButton size="small" color="primary" onClick={() => handleToggleRole(user)}><VerifiedUserIcon fontSize="small" /></IconButton>
-                        <IconButton size="small" color="error" onClick={() => handleDeleteUser(user._id)}><DeleteIcon fontSize="small" /></IconButton>
+                        <IconButton color="primary" onClick={() => handleToggleRole(user)}><VerifiedUserIcon /></IconButton>
+                        <IconButton color="error" onClick={() => handleDeleteUser(user._id)}><DeleteIcon /></IconButton>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -262,33 +304,57 @@ const AdminPanel = () => {
               </Table>
             </TableContainer>
 
+            <Divider />
             <TablePagination
-              rowsPerPageOptions={[5, 10]}
+              rowsPerPageOptions={[5, 10, 25]}
               component="div"
               count={totalUsers}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
-              sx={{ borderTop: 1, borderColor: 'divider' }}
+              sx={{ bgcolor: isDark ? alpha('#fff', 0.02) : '#fff' }}
             />
           </TabPanel>
 
           <TabPanel value={tabValue} index={1}>
-            <Box sx={{ p: { xs: 2, sm: 3 } }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={12}>
-                   <Box sx={{ height: 250, width: '100%' }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#333' : '#eee'} />
-                        <XAxis dataKey="name" hide={isMobile} />
-                        <YAxis hide />
-                        <ChartTooltip />
-                        <Area type="monotone" dataKey="active" stroke={theme.palette.primary.main} fill={alpha(theme.palette.primary.main, 0.1)} />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </Box>
+            <Box sx={{ p: 3 }}>
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={8}>
+                  <Card variant="outlined" sx={{ borderRadius: 2, bgcolor: 'transparent' }}>
+                    <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1, bgcolor: isDark ? alpha('#fff', 0.05) : '#f8fafc' }}>
+                      <AnalyticsIcon color="primary" />
+                      <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Real-time Traffic Activity</Typography>
+                    </Box>
+                    <Divider />
+                    <Box sx={{ p: 2, height: 300, width: '100%' }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={chartData}>
+                          <defs>
+                            <linearGradient id="colorActive" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.3}/>
+                              <stop offset="95%" stopColor={theme.palette.primary.main} stopOpacity={0}/>
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#444' : '#eee'} />
+                          <XAxis dataKey="name" stroke={theme.palette.text.secondary} />
+                          <YAxis stroke={theme.palette.text.secondary} />
+                          <ChartTooltip contentStyle={{ backgroundColor: theme.palette.background.paper, borderRadius: '8px' }} />
+                          <Area type="monotone" dataKey="active" stroke={theme.palette.primary.main} fillOpacity={1} fill="url(#colorActive)" />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </Box>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <Card variant="outlined" sx={{ borderRadius: 2, p: 3, height: '100%', bgcolor: 'transparent', textAlign: 'center' }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>System Security</Typography>
+                    <Box sx={{ py: 2 }}>
+                        <SecurityIcon sx={{ fontSize: 60, color: '#10b981', mb: 2 }} />
+                        <Typography variant="h6">Firewall Active</Typography>
+                        <Typography variant="body2" color="text.secondary">All requests monitored.</Typography>
+                    </Box>
+                  </Card>
                 </Grid>
               </Grid>
             </Box>
@@ -296,8 +362,7 @@ const AdminPanel = () => {
         </Paper>
       </Container>
 
-      {/* Dialog responsive fix */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="xs" scroll="body">
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="xs">
         <DialogTitle sx={{ fontWeight: 700 }}>Add New User</DialogTitle>
         <DialogContent dividers>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
@@ -311,7 +376,7 @@ const AdminPanel = () => {
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleAddUser}>Create</Button>
+          <Button variant="contained" onClick={handleAddUser} sx={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>Create User</Button>
         </DialogActions>
       </Dialog>
     </Box>
