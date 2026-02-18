@@ -1,0 +1,153 @@
+import React, { useState } from 'react';
+import { 
+  Box, Container, Paper, Typography, TextField, Button, 
+  Grid, Divider, Avatar, IconButton, InputAdornment 
+} from '@mui/material';
+import { Visibility, VisibilityOff, Save, Lock, Email } from '@mui/icons-material';
+import { toast } from 'react-toastify';
+import api from '../api/axios'; // Aapka axios instance
+
+const AccountSettings = ({ currentUser }) => {
+  const [email, setEmail] = useState(currentUser?.email || '');
+  const [passwords, setPasswords] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [showPass, setShowPass] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Email Change Logic
+  const handleUpdateEmail = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await api.put('/auth/update-email', { email });
+      toast.success("Email updated successfully!");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to update email");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Password Change Logic
+  const handleUpdatePassword = async (e) => {
+    e.preventDefault();
+    if (passwords.newPassword !== passwords.confirmPassword) {
+      return toast.error("Passwords do not match!");
+    }
+    
+    setLoading(true);
+    try {
+      await api.put('/auth/update-password', {
+        currentPassword: passwords.currentPassword,
+        newPassword: passwords.newPassword
+      });
+      toast.success("Password changed successfully!");
+      setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Invalid current password");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Typography variant="h4" sx={{ fontWeight: 800, mb: 3 }}>Account Settings</Typography>
+      
+      <Grid container spacing={3}>
+        {/* Email Settings Section */}
+        <Grid item xs={12}>
+          <Paper sx={{ p: 3, borderRadius: 3 }} elevation={0} variant="outlined">
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
+              <Email color="primary" />
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>Email Address</Typography>
+            </Box>
+            <form onSubmit={handleUpdateEmail}>
+              <TextField
+                fullWidth
+                label="Your Email"
+                variant="outlined"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                sx={{ mb: 2 }}
+              />
+              <Button 
+                variant="contained" 
+                type="submit" 
+                disabled={loading}
+                startIcon={<Save />}
+              >
+                Save Email
+              </Button>
+            </form>
+          </Paper>
+        </Grid>
+
+        {/* Password Settings Section */}
+        <Grid item xs={12}>
+          <Paper sx={{ p: 3, borderRadius: 3 }} elevation={0} variant="outlined">
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
+              <Lock color="primary" />
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>Change Password</Typography>
+            </Box>
+            <form onSubmit={handleUpdatePassword}>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Current Password"
+                    type={showPass ? "text" : "password"}
+                    value={passwords.currentPassword}
+                    onChange={(e) => setPasswords({...passwords, currentPassword: e.target.value})}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="New Password"
+                    type={showPass ? "text" : "password"}
+                    value={passwords.newPassword}
+                    onChange={(e) => setPasswords({...passwords, newPassword: e.target.value})}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Confirm New Password"
+                    type={showPass ? "text" : "password"}
+                    value={passwords.confirmPassword}
+                    onChange={(e) => setPasswords({...passwords, confirmPassword: e.target.value})}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton onClick={() => setShowPass(!showPass)}>
+                            {showPass ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Button 
+                    variant="contained" 
+                    type="submit" 
+                    color="secondary"
+                    disabled={loading}
+                  >
+                    Update Password
+                  </Button>
+                </Grid>
+              </Grid>
+            </form>
+          </Paper>
+        </Grid>
+      </Grid>
+    </Container>
+  );
+};
+
+export default AccountSettings;
