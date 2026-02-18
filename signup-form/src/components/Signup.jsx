@@ -35,13 +35,21 @@ const cloudStyles = (theme) => `
     from { opacity: 0; transform: translateY(30px); }
     to { opacity: 1; transform: translateY(0); }
   }
+  /* Ultra-Slow Neon Glow Animation */
+  @keyframes neonGlow {
+    0% { filter: blur(70px); opacity: 0.5; transform: translate(0, 0) scale(1); }
+    33% { filter: blur(100px); opacity: 0.8; transform: translate(30px, -50px) scale(1.2); }
+    66% { filter: blur(80px); opacity: 0.6; transform: translate(-20px, 40px) scale(0.9); }
+    100% { filter: blur(70px); opacity: 0.5; transform: translate(0, 0) scale(1); }
+  }
+
   .cloud { position: absolute; pointer-events: none; z-index: 1; }
   .cloud-left { animation: float-left 45s infinite linear; }
   .cloud-right { animation: float-right 50s infinite linear; }
   .cloud-shape {
     width: 120px;
     height: 50px;
-    background: ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.8)'};
+    background: ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.75)'};
     border-radius: 50px;
     filter: blur(4px);
     position: relative;
@@ -51,7 +59,7 @@ const cloudStyles = (theme) => `
   }
   .cloud-shape::before { width: 60px; height: 60px; top: -30px; left: 10px; }
   .cloud-shape::after { width: 50px; height: 50px; top: -25px; right: 20px; }
-  .form-paper { animation: slideInUp 0.6s ease-out; }
+  .form-paper { animation: slideInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
 `;
 
 const Signup = () => {
@@ -86,78 +94,97 @@ const Signup = () => {
         alignItems: "center",
         position: "relative",
         overflow: "hidden",
-        /* ✅ Light mode me purana Sky Blue background wapas la diya */
         background: isDark 
           ? `linear-gradient(180deg, ${theme.palette.background.default} 0%, #000 100%)`
           : "linear-gradient(180deg, #cfe9f9 0%, #eef6fb 100%)",
-        transition: "background 0.5s ease"
+        transition: "background 1.5s cubic-bezier(0.4, 0, 0.2, 1)"
       }}
     >
       <style>{cloudStyles(theme)}</style>
 
-      {/* Clouds Layer - Inhe zIndex 1 par rakha hai */}
+      {/* --- NEON GLOW EFFECTS (Slow & Attractive) --- */}
+      {/* Top Left Neon Cyan */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: "-10%",
+          left: "-10%",
+          width: "600px",
+          height: "600px",
+          background: isDark 
+            ? "radial-gradient(circle, rgba(0, 255, 242, 0.15) 0%, transparent 70%)"
+            : "radial-gradient(circle, rgba(0, 217, 255, 0.4) 0%, transparent 70%)",
+          borderRadius: "50%",
+          zIndex: 0,
+          animation: "neonGlow 15s infinite ease-in-out",
+        }}
+      />
+      
+      {/* Bottom Right Electric Purple */}
+      <Box
+        sx={{
+          position: "absolute",
+          bottom: "-15%",
+          right: "-5%",
+          width: "700px",
+          height: "700px",
+          background: isDark 
+            ? "radial-gradient(circle, rgba(147, 51, 234, 0.2) 0%, transparent 70%)"
+            : "radial-gradient(circle, rgba(191, 0, 255, 0.2) 0%, transparent 70%)",
+          borderRadius: "50%",
+          zIndex: 0,
+          animation: "neonGlow 20s infinite ease-in-out reverse",
+        }}
+      />
+
+      {/* Clouds Layer */}
       {[...Array(6)].map((_, i) => (
         <Box 
           key={i}
           className={`cloud ${i % 2 === 0 ? 'cloud-left' : 'cloud-right'}`} 
-          sx={{ 
-            top: `${15 * i + 10}%`, 
-            animationDelay: `${i * 2}s`,
-            opacity: isDark ? 0.2 : 0.8 
-          }}
+          sx={{ top: `${15 * i + 10}%`, animationDelay: `${i * 3}s`, opacity: isDark ? 0.15 : 0.8 }}
         >
           <Box className="cloud-shape" />
         </Box>
       ))}
 
-      <Container 
-        maxWidth="sm" 
-        sx={{ 
-          position: "relative", 
-          zIndex: 10, // ✅ Ensure form is always on top
-          display: 'flex', 
-          justifyContent: 'center' 
-        }}
-      >
+      <Container maxWidth="sm" sx={{ position: "relative", zIndex: 10, display: 'flex', justifyContent: 'center' }}>
         <Paper
-          elevation={isDark ? 0 : 4}
+          elevation={0}
           className="form-paper"
           sx={{
             width: "100%",
-            maxWidth: 400,
-            p: 4,
-            borderRadius: 6,
-            /* ✅ Glassmorphism effect: thoda transparent taaki background ki blue vibes aayein */
+            maxWidth: 420,
+            p: { xs: 3, sm: 5 },
+            borderRadius: 10,
+            /* Ultra Glass Effect */
             background: isDark 
-              ? alpha(theme.palette.background.paper, 0.8) 
-              : alpha('#fff', 0.85),
-            backdropFilter: "blur(12px)",
-            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+              ? alpha(theme.palette.background.paper, 0.6) 
+              : alpha('#fff', 0.7),
+            backdropFilter: "blur(30px)",
+            border: `1px solid ${alpha('#fff', 0.2)}`,
             boxShadow: isDark 
-              ? "0 25px 50px rgba(0,0,0,0.5)" 
-              : "0 25px 50px rgba(0,0,0,0.1)",
+              ? `0 20px 80px ${alpha('#000', 0.8)}` 
+              : `0 20px 80px ${alpha(theme.palette.primary.main, 0.15)}`,
           }}
         >
-          <Box sx={{ textAlign: 'center', mb: 3 }}>
-            <Box 
-              sx={{ 
-                width: 60, height: 60, borderRadius: '50%', 
-                bgcolor: alpha(theme.palette.primary.main, 0.1),
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                margin: '0 auto', mb: 2
-              }}
-            >
-              <PersonOutlineIcon sx={{ fontSize: 35, color: theme.palette.primary.main }} />
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <Box sx={{ 
+                width: 70, height: 70, bgcolor: isDark ? alpha('#00f2ff', 0.1) : alpha(theme.palette.primary.main, 0.1), 
+                borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', m: '0 auto', mb: 2,
+                transform: 'rotate(-10deg)', border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+            }}>
+              <PersonOutlineIcon sx={{ fontSize: 40, color: theme.palette.primary.main }} />
             </Box>
-            <Typography variant="h5" fontWeight={800} sx={{ color: theme.palette.text.primary }}>
-              Create Account
+            <Typography variant="h4" fontWeight={900} sx={{ color: theme.palette.text.primary, letterSpacing: '-1px' }}>
+              Sign Up
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Secure your journey with us
+            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+              Join the future of secure accounts
             </Typography>
           </Box>
 
-          { (error || localError) && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{error || localError}</Alert> }
+          { (error || localError) && <Alert severity="error" variant="filled" sx={{ mb: 3, borderRadius: 3 }}>{error || localError}</Alert> }
 
           <form onSubmit={handleSubmit}>
             <TextField
@@ -166,10 +193,9 @@ const Signup = () => {
               margin="normal"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              variant="outlined"
               InputProps={{
-                startAdornment: <InputAdornment position="start"><EmailOutlinedIcon fontSize="small" color="primary" /></InputAdornment>,
-                sx: { borderRadius: 3 }
+                startAdornment: <InputAdornment position="start"><EmailOutlinedIcon color="primary" /></InputAdornment>,
+                sx: { borderRadius: 4, height: 56, bgcolor: alpha(theme.palette.background.default, 0.3) }
               }}
             />
             <TextField
@@ -180,8 +206,8 @@ const Signup = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               InputProps={{
-                startAdornment: <InputAdornment position="start"><LockOutlinedIcon fontSize="small" color="primary" /></InputAdornment>,
-                sx: { borderRadius: 3 }
+                startAdornment: <InputAdornment position="start"><LockOutlinedIcon color="primary" /></InputAdornment>,
+                sx: { borderRadius: 4, height: 56, bgcolor: alpha(theme.palette.background.default, 0.3) }
               }}
             />
             <TextField
@@ -192,8 +218,8 @@ const Signup = () => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               InputProps={{
-                startAdornment: <InputAdornment position="start"><LockOutlinedIcon fontSize="small" color="primary" /></InputAdornment>,
-                sx: { borderRadius: 3 }
+                startAdornment: <InputAdornment position="start"><LockOutlinedIcon color="primary" /></InputAdornment>,
+                sx: { borderRadius: 4, height: 56, bgcolor: alpha(theme.palette.background.default, 0.3) }
               }}
             />
 
@@ -201,33 +227,34 @@ const Signup = () => {
               type="submit"
               fullWidth
               variant="contained"
-              size="large"
               sx={{
                 mt: 4,
-                py: 1.5,
-                borderRadius: 3,
-                fontWeight: 700,
-                textTransform: 'none',
+                py: 2,
+                borderRadius: 4,
+                fontWeight: 800,
                 fontSize: '1rem',
-                boxShadow: `0 8px 20px ${alpha(theme.palette.primary.main, 0.3)}`,
+                textTransform: 'none',
+                /* Multi-color Button Gradient */
                 background: isDark 
-                    ? `linear-gradient(45deg, ${theme.palette.primary.main}, #4338ca)`
-                    : `linear-gradient(45deg, #1f2937, #000)`,
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  transition: 'all 0.2s'
+                    ? `linear-gradient(90deg, #00f2ff, #7000ff)`
+                    : `linear-gradient(90deg, #1f2937, #000)`,
+                boxShadow: isDark ? `0 10px 30px ${alpha('#00f2ff', 0.3)}` : "none",
+                transition: 'all 0.4s ease',
+                '&:hover': { 
+                  transform: 'scale(1.03)', 
+                  boxShadow: isDark ? `0 15px 40px ${alpha('#00f2ff', 0.5)}` : "0 10px 20px rgba(0,0,0,0.2)"
                 }
               }}
             >
-              Sign Up
+              Get Started
             </Button>
           </form>
 
-          <Box sx={{ mt: 4, textAlign: 'center', borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`, pt: 2 }}>
-            <Typography variant="body2" color="text.secondary">
-              Already have an account?{" "}
-              <Link to="/login" style={{ color: theme.palette.primary.main, fontWeight: 700, textDecoration: 'none' }}>
-                Login
+          <Box sx={{ mt: 4, textAlign: 'center' }}>
+            <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>
+              Already a member?{" "}
+              <Link to="/login" style={{ color: theme.palette.primary.main, textDecoration: 'none', borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.3)}` }}>
+                Login here
               </Link>
             </Typography>
           </Box>
