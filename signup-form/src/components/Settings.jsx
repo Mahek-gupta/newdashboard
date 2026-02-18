@@ -136,6 +136,15 @@ const Settings = () => {
                 fullWidth label="Current Password" type={showPass ? "text" : "password"} size="small"
                 value={passwords.currentPassword}
                 onChange={(e) => setPasswords({...passwords, currentPassword: e.target.value})}
+                      InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPass(!showPass)} size="small">
+                        {showPass ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
               />
             </Grid>
             <Grid item xs={12}>
@@ -143,6 +152,15 @@ const Settings = () => {
                 fullWidth label="New Password" type={showPass ? "text" : "password"} size="small"
                 value={passwords.newPassword}
                 onChange={(e) => setPasswords({...passwords, newPassword: e.target.value})}
+                      InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPass(!showPass)} size="small">
+                        {showPass ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
               />
             </Grid>
             <Grid item xs={12}>
