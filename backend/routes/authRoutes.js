@@ -3,7 +3,7 @@
 import express from "express"
 import { 
   signup, login, refreshToken, logout, verifyOTP,
-  forgotPassword, resetPassword, resendOTP,updateEmail, updatePassword
+  forgotPassword, resetPassword, resendOTP,updateEmail, updatePassword,
   getAllUsers, deleteUser, updateUserRole, updateProfile
 } from "../controllers/authController.js"
 import { protect, adminOnly } from "../middleware/authMiddleware.js" // adminOnly zaroori hai
