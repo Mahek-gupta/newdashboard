@@ -19,9 +19,7 @@ const cloudStyles = (theme) => `
   @keyframes float-right { 0% { transform: translateX(-100vw); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateX(100vw); opacity: 0; } }
   @keyframes slideInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
   
-  /* ✅ Ultra-Slow Neon Glow Animation (Wahi Signup wali) */
   @keyframes neonGlow {
     0% { filter: blur(70px); opacity: 0.5; transform: translate(0, 0) scale(1); }
     33% { filter: blur(100px); opacity: 0.8; transform: translate(30px, -50px) scale(1.2); }
@@ -32,10 +30,20 @@ const cloudStyles = (theme) => `
   .cloud { position: absolute; pointer-events: none; z-index: 1; }
   .cloud-left { animation: float-left 45s infinite linear; }
   .cloud-right { animation: float-right 50s infinite linear; }
-  .cloud-shape { width: 120px; height: 50px; background: ${theme.palette.mode === 'dark' ? alpha('#fff', 0.1) : 'rgba(255, 255, 255, 0.7)'}; border-radius: 50px; filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.1)); position: relative; }
+  
+  /* ✅ Fixed: Added Blur and consistent styling */
+  .cloud-shape { 
+    width: 120px; 
+    height: 50px; 
+    background: ${theme.palette.mode === 'dark' ? alpha('#fff', 0.08) : 'rgba(255, 255, 255, 0.75)'}; 
+    border-radius: 50px; 
+    filter: blur(5px); 
+    position: relative; 
+  }
   .cloud-shape::before, .cloud-shape::after { content: ''; position: absolute; background: inherit; border-radius: 50%; }
   .cloud-shape::before { width: 60px; height: 60px; top: -30px; left: 10px; }
   .cloud-shape::after { width: 50px; height: 50px; top: -25px; right: 20px; }
+  
   .form-paper { animation: slideInUp 0.6s ease-out, fadeInScale 0.6s ease-out; position: relative; z-index: 10; }
 `
 
@@ -111,7 +119,6 @@ const Login = () => {
     <Box sx={{
         minHeight: "100vh", width: "100%", display: "flex", justifyContent: "center", alignItems: "center",
         px: 2, py: 4, position: "relative", overflow: "hidden", 
-        /* ✅ Smooth Background transition */
         transition: "background 1.5s cubic-bezier(0.4, 0, 0.2, 1)",
         background: isDark 
           ? `linear-gradient(180deg, ${theme.palette.background.default} 0%, #000 100%)`
@@ -119,7 +126,7 @@ const Login = () => {
     }}>
       <style>{cloudStyles(theme)}</style>
 
-      {/* --- ✅ NEON GLOW EFFECTS (Same as Signup) --- */}
+      {/* --- NEON GLOW EFFECTS --- */}
       <Box
         sx={{
           position: "absolute", top: "-10%", left: "-10%", width: "600px", height: "600px",
@@ -140,8 +147,13 @@ const Login = () => {
         }}
       />
 
+      {/* ✅ Clouds with updated Opacity & Blur */}
       {[0, 3, 6, 9, 2, 5, 8, 1].map((delay, i) => (
-        <Box key={i} className={`cloud cloud-${i % 2 === 0 ? 'left' : 'right'}`} sx={{ top: `${5 + i * 10}%`, animationDelay: `${delay}s`, opacity: isDark ? 0.15 : 0.8 }}>
+        <Box 
+          key={i} 
+          className={`cloud cloud-${i % 2 === 0 ? 'left' : 'right'}`} 
+          sx={{ top: `${5 + i * 10}%`, animationDelay: `${delay}s`, opacity: isDark ? 0.12 : 0.75 }}
+        >
           <Box className="cloud-shape" />
         </Box>
       ))}
@@ -150,32 +162,37 @@ const Login = () => {
         <Paper elevation={0} className="form-paper"
           sx={{
             width: "100%", maxWidth: 420, p: { xs: 3, sm: 4 }, borderRadius: 8,
-            /* ✅ Glassmorphism Match */
             background: isDark 
               ? alpha(theme.palette.background.paper, 0.6) 
               : alpha('#fff', 0.75),
             backdropFilter: "blur(30px)",
             border: `1px solid ${alpha('#fff', 0.2)}`,
-            boxShadow: isDark ? "0 20px 60px rgba(0, 0, 0, 0.5)" : "0 20px 60px rgba(0, 0, 0, 0.1)",
+            boxShadow: isDark ? `0 20px 80px ${alpha('#000', 0.8)}` : `0 20px 60px ${alpha(theme.palette.primary.main, 0.1)}`,
           }}
         >
           <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
-            {step === 'login' ? (
-              <LoginIcon sx={{ fontSize: 40, color: theme.palette.primary.main }} />
-            ) : (
-              <VerifiedUserIcon sx={{ fontSize: 40, color: "#10b981" }} />
-            )}
+            <Box sx={{ 
+                width: 60, height: 60, bgcolor: isDark ? alpha('#00f2ff', 0.1) : alpha(theme.palette.primary.main, 0.1), 
+                borderRadius: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transform: 'rotate(-10deg)', border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+            }}>
+              {step === 'login' ? (
+                <LoginIcon sx={{ fontSize: 32, color: theme.palette.primary.main }} />
+              ) : (
+                <VerifiedUserIcon sx={{ fontSize: 32, color: "#10b981" }} />
+              )}
+            </Box>
           </Box>
 
-          <Typography variant="h5" align="center" fontWeight={800} sx={{ mb: 1, color: theme.palette.text.primary, letterSpacing: '-0.5px' }}>
+          <Typography variant="h5" align="center" fontWeight={900} sx={{ mb: 1, color: theme.palette.text.primary, letterSpacing: '-1px' }}>
             {step === 'login' ? "Welcome Back" : "Security Check"}
           </Typography>
 
-          <Typography variant="body2" align="center" color="text.secondary" sx={{ mb: 3, fontWeight: 500 }}>
+          <Typography variant="body2" align="center" color="text.secondary" sx={{ mb: 3, fontWeight: 600 }}>
             {step === 'login' ? "Sign in to your account to continue" : `Verification code sent to ${email}`}
           </Typography>
 
-          {authError && <Alert severity="error" sx={{ mb: 2, borderRadius: 3 }}>{authError}</Alert>}
+          {authError && <Alert severity="error" sx={{ mb: 2, borderRadius: 3, fontWeight: 600 }}>{authError}</Alert>}
 
           {step === 'login' ? (
             <Box component="form" onSubmit={handleLoginSubmit}>
@@ -184,7 +201,7 @@ const Login = () => {
                 value={email} onChange={(e) => setEmail(e.target.value)}
                 InputProps={{ 
                     startAdornment: (<InputAdornment position="start"><EmailOutlinedIcon fontSize="small" color="primary" /></InputAdornment>),
-                    sx: { borderRadius: 4, bgcolor: alpha(theme.palette.background.default, 0.3) } 
+                    sx: { borderRadius: 4, height: 56, bgcolor: alpha(theme.palette.background.default, 0.3) } 
                 }}
               />
               <TextField
@@ -192,7 +209,7 @@ const Login = () => {
                 value={password} onChange={(e) => setPassword(e.target.value)}
                 InputProps={{ 
                     startAdornment: (<InputAdornment position="start"><LockOutlinedIcon fontSize="small" color="primary" /></InputAdornment>),
-                    sx: { borderRadius: 4, bgcolor: alpha(theme.palette.background.default, 0.3) } 
+                    sx: { borderRadius: 4, height: 56, bgcolor: alpha(theme.palette.background.default, 0.3) } 
                 }}
               />
 
@@ -206,12 +223,12 @@ const Login = () => {
 
               <Button type="submit" fullWidth disabled={loading}
                 sx={{
-                  py: 1.5, borderRadius: 4, fontWeight: 800, textTransform: "none", fontSize: "16px",
+                  py: 1.8, borderRadius: 4, fontWeight: 800, textTransform: "none", fontSize: "1rem",
                   background: isDark 
                     ? `linear-gradient(90deg, #00f2ff, #7000ff)` 
                     : `linear-gradient(90deg, #1f2937, #000)`,
                   color: "#fff", transition: 'all 0.4s ease',
-                  '&:hover': { transform: 'scale(1.02)', boxShadow: isDark ? `0 10px 25px ${alpha('#00f2ff', 0.4)}` : "0 8px 16px rgba(0,0,0,0.2)" }
+                  '&:hover': { transform: 'scale(1.02)', boxShadow: isDark ? `0 10px 25px ${alpha('#00f2ff', 0.5)}` : "0 8px 16px rgba(0,0,0,0.3)" }
                 }}
               >
                 {loading ? <CircularProgress size={24} color="inherit" /> : "Sign In"}
