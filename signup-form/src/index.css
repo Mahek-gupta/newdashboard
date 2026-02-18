@@ -15,7 +15,7 @@ html, body, #root {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: -1; /* Taaki content ke piche rahe */
+  z-index: 1; /* Taaki content ke piche rahe */
   pointer-events: none; /* Is par click na ho sake */
   transition: background 0.8s ease-in-out; /* Roshni dheere se change hogi */
   
