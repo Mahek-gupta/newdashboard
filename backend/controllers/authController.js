@@ -319,7 +319,7 @@ export const updateUserRole = async (req, res) => {
   }
 };
 // 1. Update Email
-exports.updateEmail = async (req, res) => {
+export const updateEmail = async (req, res) => {
     try {
         const { email } = req.body;
         const userId = req.user.id; // Yeh auth middleware se aayega
@@ -343,7 +343,7 @@ exports.updateEmail = async (req, res) => {
 };
 
 // 2. Update Password (Secure Way)
-exports.updatePassword = async (req, res) => {
+export const updatePassword = async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
         const userId = req.user.id;
