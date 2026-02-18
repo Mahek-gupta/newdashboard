@@ -115,7 +115,7 @@ const App = () => {
           <GlowEffect />
 
           {/* Baaki saara content iske upar dikhega */}
-          <Box sx={{ position: 'relative', zIndex: 1 }}>
+          <Box sx={{ position: 'relative', zIndex: 10 }}>
             <Navbar />  
             <Routes>
               <Route path="/" element={<Login />} />
