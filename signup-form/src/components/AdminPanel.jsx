@@ -493,7 +493,22 @@ const AdminPanel = () => {
       toast.error("Failed to update role");
     }
   };
-
+ const exportToCSV = () => {
+    const headers = ["Email,Role,Status,JoinedDate\n"];
+    const rows = filteredUsers.map(user => 
+      `${user.email},${user.role},${isOnline(user) ? 'Online' : 'Offline'},${new Date(user.createdAt).toLocaleDateString()}`
+    );
+    const blob = new Blob([headers + rows.join("\n")], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', 'users_list.csv');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    toast.success("CSV Downloaded!");
+  };
   const handleAddUser = async () => {
     if(!newUser.email || !newUser.password) return toast.warning("Fill all fields");
     try {
