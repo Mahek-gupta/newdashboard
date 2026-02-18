@@ -3,7 +3,7 @@
 import express from "express"
 import { 
   signup, login, refreshToken, logout, verifyOTP,
-  forgotPassword, resetPassword, resendOTP,
+  forgotPassword, resetPassword, resendOTP,updateEmail, updatePassword
   getAllUsers, deleteUser, updateUserRole, updateProfile
 } from "../controllers/authController.js"
 import { protect, adminOnly } from "../middleware/authMiddleware.js" // adminOnly zaroori hai
@@ -42,6 +42,8 @@ router.get("/profile", protect, async (req, res) => {
 
 // --- ADMIN ONLY ROUTES ---
 // In routes par 'protect' (login check) aur 'adminOnly' (role check) dono hone chahiye
+router.put('/update-email', protect, updateEmail);
+router.put('/update-password', protect, updatePassword);
 router.get("/users", protect, adminOnly, getAllUsers);
 router.delete("/user/:id", protect, adminOnly, deleteUser);
 router.post("/logout", protect, logout); // 'protect' lagana zaroori hai
