@@ -25,8 +25,8 @@ html, body, #root {
     var(--glow-color) 0%, 
     transparent 70%
   );
-  filter: blur(80px); /* Ise aap blur badhane ke liye change kar sakte hain */
-  opacity: 0.6; /* Thoda soft dikhne ke liye */
+  filter: blur(30px); /* Ise aap blur badhane ke liye change kar sakte hain */
+  opacity: 10; /* Thoda soft dikhne ke liye */
 }
 
 /* Light Mode Colors */
