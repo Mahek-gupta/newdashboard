@@ -9,7 +9,7 @@ html, body, #root {
   width: 100%;
 }
 /* ✨ Glowing Aura Effect ✨ */
-.glow-background {
+/* .glow-background {
   position: fixed;
   top: 0;
   left: 0;
@@ -43,4 +43,36 @@ html, body, #root {
 /* Dark Mode Colors (Violet/Indigo Aura) */
 [data-theme='dark'] {
   --glow-color: rgba(139, 92, 246, 0.3);
+} */
+/* Glowing Light Background */
+.glow-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1; /* Taaki content ke piche rahe */
+  pointer-events: none; /* Is par click na ho sake */
+  transition: background 0.8s ease-in-out; /* Roshni dheere se change hogi */
+  
+  /* Blurry Roshni effect */
+  background: radial-gradient(
+    circle at 50% -20%, 
+    var(--glow-color) 0%, 
+    transparent 70%
+  );
+  filter: blur(80px); /* Ise aap blur badhane ke liye change kar sakte hain */
+  opacity: 0.6; /* Thoda soft dikhne ke liye */
+}
+
+/* Light Mode Colors */
+[data-theme='light'] {
+  --glow-color: rgba(59, 130, 246, 0.4); /* Soft Blue roshni */
+  background-color: #ffffff;
+}
+
+/* Dark Mode Colors */
+[data-theme='dark'] {
+  --glow-color: rgba(139, 92, 246, 0.3); /* Soft Purple/Violet roshni */
+  background-color: #0f172a;
 }
