@@ -15,7 +15,7 @@ html, body, #root {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: -1; /* Taaki content ke piche rahe */
+  z-index: 1; /* Taaki content ke piche rahe */
   pointer-events: none; /* Is par click na ho sake */
   transition: background 0.8s ease-in-out; /* Roshni dheere se change hogi */
   
@@ -31,12 +31,12 @@ html, body, #root {
 
 /* Light Mode Colors */
 [data-theme='light'] {
-  --glow-color: rgba(59, 130, 246, 44); /* Soft Blue roshni */
+  --glow-color: rgba(59, 130, 246, 0.4); /* Soft Blue roshni */
   background-color: #ffffff;
 }
 
 /* Dark Mode Colors */
 [data-theme='dark'] {
-  --glow-color: rgba(139, 92, 246, 33); /* Soft Purple/Violet roshni */
+  --glow-color: rgba(139, 92, 246, 0.3); /* Soft Purple/Violet roshni */
   background-color: #0f172a;
 }
