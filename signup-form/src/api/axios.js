@@ -49,11 +49,13 @@ api.interceptors.response.use(
       originalRequest.url.includes("/auth/refresh") ||
       originalRequest.url.includes("/auth/login")
     ) {
+       console.log("mahak")
       return Promise.reject(error)
+     
     }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
-
+console.log("mahaka")
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject })
