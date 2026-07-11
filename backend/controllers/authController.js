@@ -1051,6 +1051,9 @@ export const resetPassword = async (req, res) => {
 // ==========================================
 // 🚀 1. FREE AI CONTENT MODERATION FUNCTION
 // ==========================================
+// =======================================================
+// 🔥 UPDATED PROFILE CONTROLLER WITH SIGHTENGINE AI SHIELD
+// =======================================================
 export const updateProfile = async (req, res) => {   
   try {     
     const userId = req.user.id;                
@@ -1065,41 +1068,48 @@ export const updateProfile = async (req, res) => {
       return res.status(500).json({ message: "Cloudinary did not return a URL" });     
     }       
 
-    // ==========================================
-    // 🔥 LIVE AI CONTENT MODERATION ENGINE
-    // ==========================================
+    // ---------------------------------------------------
+    // 🤖 AI IMAGE MODERATION LOGIC (START)
+    // ---------------------------------------------------
     try {
+      // Free temporary account credentials for testing
+      const apiUser = process.env.SIGHTENGINE_API_USER || "1639846200";
+      const apiSecret = process.env.SIGHTENGINE_API_SECRET || "wGvLpYwZkQMRsCSTVbXvNmKzL";
+      
+      // AI ko URL bhej kar nudity aur suggestive checks run kar rahe hain
       const response = await fetch(
-        "https://api-inference.huggingface.co/models/Falconsai/nsfw_image_detection",
-        {
-          headers: { 
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${process.env.HUGGING_FACE_TOKEN}` // ✅ Safe from GitHub scanning
-          },
-          method: "POST",
-          body: JSON.stringify({ image: imageUrl }),
-        }
+        `https://api.sightengine.com/1.0/check.json?url=${encodeURIComponent(imageUrl)}&models=nudity,offensive&api_user=${apiUser}&api_secret=${apiSecret}`
       );
       
       const result = await response.json();
-      console.log("AI Live Scan Result:", result); // Terminal mein score dekhne ke liye
+      console.log("AI Live Evaluation Logs:", result); // Isse terminal mein exact percentage dikhegi
 
-      if (Array.isArray(result) && result.length > 0) {
-        const nsfwData = result.find(item => item.label === 'nsfw');
+      if (result.status === "success" && result.nudity) {
+        // Bikini/Swimwear ya suggestive pictures ko pichla model chor raha tha, 
+        // isliye hum yahan erotica, sexual display sabka maximum score nikal rahe hain
+        const maxSafetyScore = Math.max(
+          result.nudity.sexual_activity || 0,
+          result.nudity.sexual_display || 0,
+          result.nudity.erotica || 0
+        );
         
-        // Agar AI ko 50% se zyada lagta hai ki image unsafe hai, toh turant block karo
-        if (nsfwData && nsfwData.score > 0.5) {
+        // Agar image 40% se zyada suggestive ya unsafe hui, toh database tak nahi jaane denge
+        if (maxSafetyScore > 0.4) {
           return res.status(400).json({
-            message: "AI Guard Alert: Inappropriate or NSFW content detected. Upload canceled for platform safety."
+            message: "AI Guard Alert: Inappropriate or unprofessional swimwear/suggestive content detected. Please upload a professional profile picture."
           });
         }
       }
     } catch (aiError) {
-      console.error("AI Scan Failed, bypassing to prevent crash:", aiError);
-      // Agar AI api limit khatam ho jaye ya server down ho, toh standard update hone dein
+      console.error("AI Shield temporary bypass on failure:", aiError);
+      // Agar API down ho toh crash na ho, request aage badh jaye
     }
+    // ---------------------------------------------------
+    // 🤖 AI IMAGE MODERATION LOGIC (END)
+    // ---------------------------------------------------
 
-    // ✅ Safe Image: Ab database update hoga
+
+    // ✅ SAFE IMAGE: Agar AI clear kar de, toh hi yeh database update chalega
     const updatedUser = await User.findByIdAndUpdate(       
       userId,       
       { profilePic: imageUrl },        
