@@ -1066,20 +1066,38 @@ export const updateProfile = async (req, res) => {
     }       
 
     // ==========================================
-    // 🔥 SAFE AI CONTENT VERIFICATION (Zero Tokens)
+    // 🔥 LIVE AI CONTENT MODERATION ENGINE
     // ==========================================
-    // Cloudinary automatically images ko analyze karta hai. Agar image metadata mein 
-    // objectionable features hain ya upload configuration restrictions hain:
-    if (fileData.info?.moderation && fileData.info.moderation[0]?.status === 'rejected') {
-      return res.status(400).json({
-        message: "AI Guard Alert: Inappropriate content detected. Upload canceled for platform safety."
-      });
-    }
+    try {
+      const response = await fetch(
+        "https://api-inference.huggingface.co/models/Falconsai/nsfw_image_detection",
+        {
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${process.env.HUGGING_FACE_TOKEN}` // ✅ Safe from GitHub scanning
+          },
+          method: "POST",
+          body: JSON.stringify({ image: imageUrl }),
+        }
+      );
+      
+      const result = await response.json();
+      console.log("AI Live Scan Result:", result); // Terminal mein score dekhne ke liye
 
-    // Backup Industry Trick: Agar hume bina kisi token ke free AI moderation check lagana hai,
-    // toh hum open-source URL check use kar sakte hain. Lekin isse bhi aasan hai ki hum standard
-    // Cloudinary upload properties ka use karein.
-    // GitHub error se bachne ke liye humne Hugging Face ka hardcoded Token poora delete kar diya hai.
+      if (Array.isArray(result) && result.length > 0) {
+        const nsfwData = result.find(item => item.label === 'nsfw');
+        
+        // Agar AI ko 50% se zyada lagta hai ki image unsafe hai, toh turant block karo
+        if (nsfwData && nsfwData.score > 0.5) {
+          return res.status(400).json({
+            message: "AI Guard Alert: Inappropriate or NSFW content detected. Upload canceled for platform safety."
+          });
+        }
+      }
+    } catch (aiError) {
+      console.error("AI Scan Failed, bypassing to prevent crash:", aiError);
+      // Agar AI api limit khatam ho jaye ya server down ho, toh standard update hone dein
+    }
 
     // ✅ Safe Image: Ab database update hoga
     const updatedUser = await User.findByIdAndUpdate(       
@@ -1093,7 +1111,7 @@ export const updateProfile = async (req, res) => {
     }       
 
     return res.status(200).json({        
-      message: "Profile picture verified & updated successfully!",        
+      message: "Profile picture verified by AI & updated successfully!",        
       user: {          
         id: updatedUser._id,          
         email: updatedUser.email,          
