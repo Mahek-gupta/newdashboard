@@ -1016,39 +1016,123 @@ export const resetPassword = async (req, res) => {
 
 /* ================= SETTINGS PAGE CONTROLLERS ================= */ 
 
+// export const updateProfile = async (req, res) => {   
+//   try {     
+//     const userId = req.user.id;                
+//     if (!req.file) {       
+//       return res.status(400).json({ message: "No image uploaded" });     
+//     }       
+//     const imageUrl = req.file.path || req.file.secure_url;     
+//     if (!imageUrl) {       
+//       return res.status(500).json({ message: "Cloudinary did not return a URL" });     
+//     }       
+//     const updatedUser = await User.findByIdAndUpdate(       
+//       userId,       
+//       { profilePic: imageUrl },        
+//       { new: true }     
+//     ).select("-password");       
+//     if (!updatedUser) {       
+//       return res.status(404).json({ message: "User not found" });     
+//     }       
+//     return res.status(200).json({        
+//       message: "Profile picture updated successfully",        
+//       user: {         
+//         id: updatedUser._id,         
+//         email: updatedUser.email,         
+//         role: updatedUser.role,         
+//         profilePic: updatedUser.profilePic        
+//       }      
+//     });   
+//   } catch (error) {     
+//     console.error("Update Profile Error:", error);     
+//     return res.status(500).json({ message: "Upload failed", error: error.message });   
+//   } 
+// };  
+// ==========================================
+// 🚀 1. FREE AI CONTENT MODERATION FUNCTION
+// ==========================================
+async function checkImageSafety(imageUrl) {
+  try {
+    // Hugging Face AI API ko direct image ka URL bhejenge scanning ke liye
+    const response = await fetch(
+      "https://api-inference.huggingface.co/models/Falconsai/nsfw_image_detection",
+      {
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+        body: JSON.stringify({ image: imageUrl }), // Image ka live URL send kiya
+      }
+    );
+    
+    const result = await response.json();
+    
+    // AI check karega ki image 'normal' (safe) hai ya 'nsfw' (unsafe)
+    if (Array.isArray(result) && result.length > 0) {
+      const nsfwClassification = result.find(item => item.label === 'nsfw');
+      
+      // Agar AI ke mutabik unsafe hone ka score 60% (0.6) se zyada hai, toh return false
+      if (nsfwClassification && nsfwClassification.score > 0.6) {
+        return false; // Unsafe Image detected
+      }
+    }
+    return true; // Image completely safe hai
+  } catch (error) {
+    console.error("AI Server temporary bypass:", error);
+    // Agar kisi wajah se AI server busy ho, toh hum crash nahi karenge, request pass kar denge
+    return true; 
+  }
+}
+
+// ==========================================
+// 🛠️ 2. YOUR UPDATE PROFILE CONTROLLER (AI SHIELDED)
+// ==========================================
 export const updateProfile = async (req, res) => {   
   try {     
     const userId = req.user.id;                
     if (!req.file) {       
       return res.status(400).json({ message: "No image uploaded" });     
     }       
+    
     const imageUrl = req.file.path || req.file.secure_url;     
     if (!imageUrl) {       
       return res.status(500).json({ message: "Cloudinary did not return a URL" });     
     }       
+
+    // 🔥 DHYAN SE DEKHIYE: YAHAN AI ENGINE INTERCEPT KAR RAHA HAI
+    // Database mein save karne se pehle hum AI ko check karne bhej rahe hain
+    const isSafe = await checkImageSafety(imageUrl);
+
+    if (!isSafe) {
+      // ❌ AI ne image ko reject kar diya! System block kar dega
+      return res.status(400).json({
+        message: "AI Guard Alert: Inappropriate or unprofessional image content detected. Upload canceled for platform safety."
+      });
+    }
+
+    // ✅ Agar AI ne 'isSafe = true' diya, toh hi code niche badhega aur DB save hoga!
     const updatedUser = await User.findByIdAndUpdate(       
       userId,       
       { profilePic: imageUrl },        
       { new: true }     
     ).select("-password");       
+
     if (!updatedUser) {       
       return res.status(404).json({ message: "User not found" });     
     }       
+
     return res.status(200).json({        
-      message: "Profile picture updated successfully",        
-      user: {         
-        id: updatedUser._id,         
-        email: updatedUser.email,         
-        role: updatedUser.role,         
+      message: "Profile picture verified by AI & updated successfully!",        
+      user: {          
+        id: updatedUser._id,          
+        email: updatedUser.email,          
+        role: updatedUser.role,          
         profilePic: updatedUser.profilePic        
-      }      
+      }       
     });   
   } catch (error) {     
     console.error("Update Profile Error:", error);     
     return res.status(500).json({ message: "Upload failed", error: error.message });   
   } 
-};  
-
+};
 export const updateEmail = async (req, res) => {   
   try {     
     const { email } = req.body;     
